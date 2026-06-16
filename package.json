@@ -1,0 +1,10 @@
+{
+  "name": "blueprint",
+  "version": "0.1.0",
+  "description": "Vetted architects for AI-built software — static directory",
+  "private": true,
+  "scripts": {
+    "dev": "npx serve public -p 3000 --no-clipboard",
+    "validate:data": "node -e \"const d=require('./src/architects.js'); console.log('OK —', (d.length||window)||'entries')\""
+  }
+}

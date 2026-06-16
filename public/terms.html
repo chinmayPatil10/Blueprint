@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Terms of Use — Blueprint</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <style>
+    .terms-body { max-width: 68ch; margin-inline: auto; padding-block: clamp(3rem, 8vw, 5rem); }
+    .terms-body h1 { font-size: clamp(1.75rem, 3vw, 2.5rem); font-weight: 800; color: var(--blue); margin-bottom: .5rem; }
+    .terms-body .updated { font-size: .875rem; color: var(--ink-light); margin-bottom: 3rem; }
+    .terms-body h2 { font-size: 1.125rem; font-weight: 700; color: var(--blue); margin: 2rem 0 .625rem; }
+    .terms-body p, .terms-body li { font-size: .9375rem; color: var(--ink-mid); line-height: 1.75; margin-bottom: .75rem; }
+    .terms-body ul { padding-left: 1.25rem; list-style: disc; }
+    .terms-body a { color: var(--blue); text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="/" class="logo" aria-label="Blueprint home">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+          <rect x="2" y="2" width="24" height="24" rx="3" stroke="currentColor" stroke-width="2"/>
+          <path d="M7 14h14M14 7v14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        Blueprint
+      </a>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="terms-body">
+      <h1>Terms of Use</h1>
+      <p class="updated">Last updated: June 2025</p>
+
+      <p>Blueprint is an introduction service. It connects self-builders and renovators ("builders") with vetted architects who offer a few hours of their time. Please read these terms before using the site.</p>
+
+      <h2>1. What Blueprint is</h2>
+      <p>Blueprint provides a curated directory of architects and facilitates introductions between builders and architects. Blueprint is not an architect, does not provide regulated architectural advice, and is not party to any work, agreement, or engagement entered into between a builder and an architect.</p>
+
+      <h2>2. What Blueprint is not</h2>
+      <ul>
+        <li>Blueprint is not a regulated architectural practice.</li>
+        <li>Blueprint does not employ the architects listed on this site.</li>
+        <li>Blueprint is not responsible for the quality, accuracy, or outcome of any advice or work provided by an architect you are introduced to.</li>
+        <li>Blueprint does not handle payments, contracts, NDAs, or disputes between builders and architects.</li>
+      </ul>
+
+      <h2>3. Introductions</h2>
+      <p>When a builder submits a "Get in touch" enquiry, Blueprint reviews it and may make an introduction to a suitable architect. Blueprint does not guarantee a response or an introduction. The introduction is the extent of Blueprint's involvement — all subsequent communication, agreement of terms, fees, and any confidentiality obligations are entirely between the builder and the architect.</p>
+
+      <h2>4. Architect listings</h2>
+      <p>Blueprint manually vets each architect before listing them. Vetting is our assessment only; it does not constitute a professional endorsement, a guarantee of qualifications, or a warranty of outcomes. Builders should satisfy themselves of an architect's suitability for their specific needs.</p>
+
+      <h2>5. Privacy</h2>
+      <p>Contact details submitted via forms are used only to facilitate introductions and are not shared with third parties beyond the architect being introduced. Architects' contact details are not published on this site. See our <a href="#privacy">privacy note</a> below.</p>
+
+      <h2>6. Liability</h2>
+      <p>To the fullest extent permitted by law, Blueprint accepts no liability for any loss or damage arising from: use of this site; reliance on information provided by an architect you were introduced to; or any work carried out under an arrangement made following a Blueprint introduction.</p>
+
+      <h2>7. Governing law</h2>
+      <p>These terms are governed by the laws of England and Wales.</p>
+
+      <h2 id="privacy">Privacy note</h2>
+      <p>Blueprint collects only the information you submit via its forms (name, email, project details). This information is used solely to facilitate an introduction and is not sold or shared with third parties. Form submissions are processed by Formspree (or equivalent) and stored temporarily. You can request deletion of your data by emailing Blueprint directly.</p>
+
+      <h2>Questions</h2>
+      <p>If you have any questions about these terms, please get in touch via the contact form on the <a href="/">homepage</a>.</p>
+
+      <p><em>This document is not legal advice. If you are in doubt about your obligations or rights, consult a qualified solicitor.</em></p>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <a href="/" class="logo footer-logo" aria-label="Blueprint home">
+        <svg width="20" height="20" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+          <rect x="2" y="2" width="24" height="24" rx="3" stroke="currentColor" stroke-width="2"/>
+          <path d="M7 14h14M14 7v14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        Blueprint
+      </a>
+      <nav class="footer-nav">
+        <a href="/">Home</a>
+        <a href="terms.html">Terms</a>
+      </nav>
+      <p class="footer-note">&copy; <span id="footer-year"></span> Blueprint.</p>
+    </div>
+  </footer>
+
+  <script>document.getElementById('footer-year').textContent = new Date().getFullYear();</script>
+</body>
+</html>
