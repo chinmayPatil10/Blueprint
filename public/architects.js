@@ -12,7 +12,8 @@ window.ARCHITECTS = [
     subs: ['Backend', 'Architecture', 'APIs'],
     turnaround: '3–5 days',
     focus: 'both',
-    works: 'paid'
+    works: 'paid',
+    linkedin: 'https://linkedin.com/in/priya-nair'
   },
   {
     id: 'james-okafor',
@@ -27,7 +28,8 @@ window.ARCHITECTS = [
     subs: ['Frontend', 'Architecture'],
     turnaround: '2–4 days',
     focus: 'blueprints',
-    works: 'both'
+    works: 'both',
+    linkedin: 'https://linkedin.com/in/james-okafor'
   },
   {
     id: 'sara-lindqvist',
@@ -42,7 +44,8 @@ window.ARCHITECTS = [
     subs: ['Product Design', 'UX Research', 'Design Systems'],
     turnaround: '4–6 days',
     focus: 'both',
-    works: 'shout'
+    works: 'shout',
+    linkedin: 'https://linkedin.com/in/sara-lindqvist'
   },
   {
     id: 'marcus-delgado',
@@ -57,7 +60,8 @@ window.ARCHITECTS = [
     subs: ['LLM Integration', 'RAG / Retrieval', 'Agents'],
     turnaround: '3–5 days',
     focus: 'both',
-    works: 'paid'
+    works: 'paid',
+    linkedin: 'https://linkedin.com/in/marcus-delgado'
   },
   {
     id: 'aisha-kamara',
@@ -72,7 +76,8 @@ window.ARCHITECTS = [
     subs: ['ML Pipelines', 'Data Engineering', 'LLM Integration'],
     turnaround: '4–7 days',
     focus: 'rescues',
-    works: 'both'
+    works: 'both',
+    linkedin: 'https://linkedin.com/in/aisha-kamara'
   },
   {
     id: 'dan-kowalski',
@@ -87,7 +92,8 @@ window.ARCHITECTS = [
     subs: ['AppSec', 'Auth / Identity', 'Pen Testing'],
     turnaround: '2–3 days',
     focus: 'rescues',
-    works: 'paid'
+    works: 'paid',
+    linkedin: 'https://linkedin.com/in/dan-kowalski'
   },
   {
     id: 'yuki-tanaka',
@@ -102,7 +108,8 @@ window.ARCHITECTS = [
     subs: ['CI/CD', 'Cloud Setup', 'Infrastructure'],
     turnaround: '3–4 days',
     focus: 'both',
-    works: 'shout'
+    works: 'shout',
+    linkedin: 'https://linkedin.com/in/yuki-tanaka'
   },
   {
     id: 'elena-vasquez',
@@ -117,7 +124,8 @@ window.ARCHITECTS = [
     subs: ['UX Research', 'Accessibility', 'Product Design'],
     turnaround: '3–5 days',
     focus: 'rescues',
-    works: 'both'
+    works: 'both',
+    linkedin: 'https://linkedin.com/in/elena-vasquez'
   },
   {
     id: 'raj-patel',
@@ -132,7 +140,8 @@ window.ARCHITECTS = [
     subs: ['Cloud Setup', 'Infrastructure', 'Deployment', 'Cloud Security'],
     turnaround: '4–5 days',
     focus: 'both',
-    works: 'paid'
+    works: 'paid',
+    linkedin: 'https://linkedin.com/in/raj-patel'
   },
   {
     id: 'nikita-sorokin',
@@ -147,6 +156,7 @@ window.ARCHITECTS = [
     subs: ['Backend', 'APIs', 'LLM Integration'],
     turnaround: '2–4 days',
     focus: 'both',
-    works: 'both'
+    works: 'both',
+    linkedin: 'https://linkedin.com/in/nikita-sorokin'
   }
 ];
