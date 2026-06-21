@@ -1,4 +1,4 @@
-/* Blueprint — app.js */
+/* Codesages — app.js */
 
 (function () {
   'use strict';
@@ -41,7 +41,7 @@
       return '<span class="reward-badge reward-paid">Works for pay</span>';
     }
     if (works === 'shout') {
-      return '<span class="reward-badge reward-shout">Works for a shoutout</span>';
+      return '<span class="reward-badge reward-shout">Works for a LinkedIn shoutout</span>';
     }
     return '<span class="reward-badge reward-both">Pay or shoutout</span>';
   }
@@ -59,12 +59,15 @@
       return '<span class="arch-tag">' + escHtml(t) + '</span>';
     }).join('');
 
-    var gradientStyle = 'background: linear-gradient(135deg, ' +
-      escAttr(arch.gradientFrom) + ', ' + escAttr(arch.gradientTo) + ')';
+    var deptLabel = {
+      'engineering': 'Engineering', 'ai-data': 'AI / Data',
+      'design': 'Design / UX', 'security': 'Security', 'devops': 'DevOps'
+    };
+    var primaryDept = arch.main && arch.main[0] ? (deptLabel[arch.main[0]] || arch.main[0]) : '';
 
     return '<article class="arch-card reveal" data-id="' + escAttr(arch.id) + '">' +
       '<div class="arch-header">' +
-        '<div class="arch-avatar" style="' + gradientStyle + '" aria-hidden="true">' +
+        '<div class="arch-avatar" aria-hidden="true">' +
           escHtml(arch.initials) +
         '</div>' +
         '<div>' +
@@ -72,6 +75,7 @@
             '<span class="arch-name">' + escHtml(arch.name) + '</span>' +
             '<span class="vetted-badge">✓ Vetted</span>' +
           '</div>' +
+          (primaryDept ? '<div class="arch-dept">' + escHtml(primaryDept) + '</div>' : '') +
           '<div class="arch-role">' + escHtml(arch.role) + '</div>' +
         '</div>' +
       '</div>' +
@@ -130,7 +134,6 @@
 
     grid.innerHTML = list.map(buildCard).join('');
 
-    // Wire up card CTA buttons
     var btns = grid.querySelectorAll('.arch-cta');
     btns.forEach(function (btn) {
       btn.addEventListener('click', function () {
@@ -138,7 +141,6 @@
       });
     });
 
-    // Trigger reveal for newly rendered cards
     initReveal(grid.querySelectorAll('.reveal'));
   }
 
@@ -195,6 +197,30 @@
     });
   }
 
+  /* ── Department card filter links ──────────────────────── */
+  function initDeptCards() {
+    var cards = document.querySelectorAll('.dept-card[data-dept-filter]');
+    cards.forEach(function (card) {
+      card.addEventListener('click', function (e) {
+        e.preventDefault();
+        var dept = card.getAttribute('data-dept-filter');
+        activeMain = dept;
+        activeSubs.clear();
+
+        var chips = document.querySelectorAll('.filter-chip[data-main]');
+        chips.forEach(function (c) { c.classList.remove('active-main'); });
+        var target = document.querySelector('.filter-chip[data-main="' + dept + '"]');
+        if (target) target.classList.add('active-main');
+
+        renderSubChips();
+        renderGrid();
+
+        var bench = document.getElementById('the-bench');
+        if (bench) bench.scrollIntoView({ behavior: 'smooth' });
+      });
+    });
+  }
+
   /* ── Hero roster ───────────────────────────────────────── */
   function renderHeroRoster() {
     var roster = document.getElementById('hero-roster');
@@ -219,18 +245,16 @@
         presentCats.push(catLabels[c] || c);
       }
     });
-    // dedupe
     presentCats = presentCats.filter(function (v, i, arr) { return arr.indexOf(v) === i; });
 
     var avatarsHtml = shown.map(function (a) {
-      var grad = 'linear-gradient(135deg,' + escAttr(a.gradientFrom) + ',' + escAttr(a.gradientTo) + ')';
-      return '<div class="mini-avatar" style="background:' + grad + '" title="' + escAttr(a.name) + '" aria-label="' + escAttr(a.name) + '">' +
+      return '<div class="mini-avatar" title="' + escAttr(a.name) + '" aria-label="' + escAttr(a.name) + '">' +
         escHtml(a.initials) + '</div>';
     }).join('');
 
     var catStr = presentCats.slice(0, 3).join(', ');
     if (presentCats.length > 3) catStr += ' &amp; more';
-    var labelHtml = '<strong>' + total + ' vetted specialists</strong> across ' + catStr + '.';
+    var labelHtml = '<strong>' + total + ' specialists</strong> across ' + catStr + '.';
 
     roster.innerHTML =
       '<div class="hero-roster-avatars">' + avatarsHtml + '</div>' +
@@ -307,25 +331,59 @@
 
     function handler(e) {
       if (e.key !== 'Tab') return;
-      if (focusableArr.length === 1) {
-        e.preventDefault();
-        return;
-      }
+      if (focusableArr.length === 1) { e.preventDefault(); return; }
       if (e.shiftKey) {
-        if (document.activeElement === first) {
-          e.preventDefault();
-          last.focus();
-        }
+        if (document.activeElement === first) { e.preventDefault(); last.focus(); }
       } else {
-        if (document.activeElement === last) {
-          e.preventDefault();
-          first.focus();
-        }
+        if (document.activeElement === last) { e.preventDefault(); first.focus(); }
       }
     }
 
     modalEl.addEventListener('keydown', handler);
     return function () { modalEl.removeEventListener('keydown', handler); };
+  }
+
+  /* ── Diagnosis modal ───────────────────────────────────── */
+  var diagnosisTrapCleanup = null;
+
+  function openDiagnosisModal() {
+    var overlay = document.getElementById('diagnosis-modal');
+    if (!overlay) return;
+    overlay.classList.add('modal-open');
+    document.body.style.overflow = 'hidden';
+    diagnosisTrapCleanup = trapFocus(overlay.querySelector('.modal-card'));
+  }
+
+  function closeDiagnosisModal() {
+    var overlay = document.getElementById('diagnosis-modal');
+    if (!overlay) return;
+    overlay.classList.remove('modal-open');
+    document.body.style.overflow = '';
+    if (diagnosisTrapCleanup) { diagnosisTrapCleanup(); diagnosisTrapCleanup = null; }
+  }
+
+  function initDiagnosisModal() {
+    var overlay = document.getElementById('diagnosis-modal');
+    if (!overlay) return;
+
+    var closeBtn = overlay.querySelector('.modal-close');
+    if (closeBtn) closeBtn.addEventListener('click', closeDiagnosisModal);
+
+    overlay.addEventListener('click', function (e) {
+      if (e.target === overlay) closeDiagnosisModal();
+    });
+
+    wireForm('diagnosis-form', 'diagnosis-success');
+  }
+
+  function initDiagnosisTriggers() {
+    var triggers = document.querySelectorAll('[data-open-diagnosis]');
+    triggers.forEach(function (el) {
+      el.addEventListener('click', function (e) {
+        e.preventDefault();
+        openDiagnosisModal();
+      });
+    });
   }
 
   /* ── Contact modal ─────────────────────────────────────── */
@@ -351,7 +409,7 @@
       if (nameInput) nameInput.value = arch.name;
       var firstName = arch.name.split(' ')[0];
       if (titleEl) titleEl.textContent = 'See ' + firstName;
-      if (introEl) introEl.textContent = 'Blueprint makes the intro. You and ' + firstName + ' agree terms, confidentiality and reward directly — only share what you\'re comfortable sharing until that\'s set up.';
+      if (introEl) introEl.textContent = 'Codesages makes the intro. You and ' + firstName + ' agree terms, confidentiality and reward directly — only share what you\'re comfortable sharing until that\'s set up.';
     }
 
     overlay.classList.add('modal-open');
@@ -414,7 +472,6 @@
     wireForm('apply-form', 'apply-success');
   }
 
-  /* ── Apply triggers ────────────────────────────────────── */
   function initApplyTriggers() {
     var triggers = document.querySelectorAll('[data-open-apply]');
     triggers.forEach(function (el) {
@@ -448,9 +505,11 @@
   function initEscapeKey() {
     document.addEventListener('keydown', function (e) {
       if (e.key !== 'Escape') return;
+      var diagnosis = document.getElementById('diagnosis-modal');
       var contact = document.getElementById('contact-modal');
       var apply = document.getElementById('apply-modal');
-      if (contact && contact.classList.contains('modal-open')) closeContactModal();
+      if (diagnosis && diagnosis.classList.contains('modal-open')) closeDiagnosisModal();
+      else if (contact && contact.classList.contains('modal-open')) closeContactModal();
       else if (apply && apply.classList.contains('modal-open')) closeApplyModal();
     });
   }
@@ -543,6 +602,9 @@
     renderHeroRoster();
     initCountUp();
     initMainFilters();
+    initDeptCards();
+    initDiagnosisModal();
+    initDiagnosisTriggers();
     initContactModal();
     initApplyModal();
     initApplyTriggers();
