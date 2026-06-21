@@ -7,1215 +7,327 @@
 <meta name="description" content="A community of senior engineers who review AI-built apps and tell builders what to fix. Security, auth, scale. Most work for a shoutout, not a fee.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400;1,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
-/* ─── Reset & tokens ──────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-  --bg:         #04070b;
-  --bg-2:       #070c11;
-  --bg-card:    #0a1219;
-  --bg-glass:   rgba(10,18,25,.72);
-  --border:     rgba(55,230,171,.10);
-  --border-h:   rgba(55,230,171,.25);
-  --mint:       #37e6ab;
-  --mint-2:     #7bf7cf;
-  --mint-glow:  rgba(55,230,171,.22);
-  --ink:        #eafff7;
-  --ink-mid:    #93a8a2;
-  --ink-dim:    #5a706a;
-  --radius:     10px;
-  --radius-lg:  16px;
-  --max:        1100px;
-  --nav-h:      64px;
-  --font-serif: 'Lora', Georgia, serif;
-  --font-sans:  'Inter', system-ui, sans-serif;
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:#04070b;}
+::selection{background:rgba(55,230,171,.28);color:#eafff6;}
+
+/* ── Keyframes ─────────────────────────────────────────── */
+@keyframes cdReveal{from{opacity:0;transform:translateY(22px);}to{opacity:1;transform:translateY(0);}}
+@keyframes cdBlip{from{offset-distance:0%;}to{offset-distance:100%;}}
+@keyframes cdPulse{0%,100%{opacity:1;transform:scale(1);box-shadow:0 0 0 0 rgba(55,230,171,.5);}50%{opacity:.55;transform:scale(.82);box-shadow:0 0 0 6px rgba(55,230,171,0);}}
+@keyframes cdGlow{0%,100%{opacity:.85;}50%{opacity:1;}}
+
+/* ── ECG blip offset-path ──────────────────────────────── */
+#cd-blip{
+  offset-path:path('M0,70 H600 C622,70 626,57 638,57 C650,57 654,70 676,70 H716 L731,70 L739,84 L750,16 L761,120 L772,52 L781,70 H822 C852,70 868,50 890,50 C912,50 928,70 958,70 H1600');
+  offset-rotate:0deg;
+  animation:cdBlip 5.5s linear infinite;
 }
 
-html { scroll-behavior: smooth; }
-
-body {
-  background: var(--bg);
-  color: var(--ink);
-  font-family: var(--font-sans);
-  font-size: 1rem;
-  line-height: 1.65;
-  -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+/* ── Reduced motion ────────────────────────────────────── */
+@media(prefers-reduced-motion:reduce){
+  [data-reveal]{animation:none!important;opacity:1!important;transform:none!important;}
+  #cd-blip{animation:none!important;offset-distance:47%!important;}
+  .cd-pulse-dot{animation:none!important;}
+  *{transition:none!important;}
 }
 
-/* ─── Typography ───────────────────────────────────────── */
-h1, h2, h3, h4 { font-family: var(--font-serif); font-weight: 600; line-height: 1.15; }
-h1 { font-size: clamp(2.4rem, 5vw, 3.8rem); letter-spacing: -.02em; }
-h2 { font-size: clamp(1.8rem, 3.5vw, 2.6rem); letter-spacing: -.015em; }
-h3 { font-size: 1.2rem; }
-p  { color: var(--ink-mid); }
-a  { color: inherit; text-decoration: none; }
-
-.accent { color: var(--mint); }
-i.accent { font-style: italic; color: var(--mint); }
-
-/* ─── Layout ───────────────────────────────────────────── */
-.wrap { max-width: var(--max); margin: 0 auto; padding: 0 24px; }
-section { padding: 100px 0; }
-@media (max-width: 700px) { section { padding: 72px 0; } }
-
-.label {
-  display: inline-block;
-  font-family: var(--font-sans);
-  font-size: .72rem;
-  font-weight: 600;
-  letter-spacing: .14em;
-  text-transform: uppercase;
-  color: var(--mint);
-  margin-bottom: 18px;
+/* ── Base ──────────────────────────────────────────────── */
+body{
+  font-family:'Inter',system-ui,sans-serif;
+  color:#e8f1ec;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
 }
 
-/* ─── Buttons ──────────────────────────────────────────── */
-.btn {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 13px 26px;
-  border: none; border-radius: var(--radius);
-  font-family: var(--font-sans); font-size: .9rem; font-weight: 600;
-  cursor: pointer; transition: box-shadow .2s, transform .15s, opacity .2s;
-  text-decoration: none;
-}
-.btn:focus-visible { outline: 2px solid var(--mint); outline-offset: 3px; }
-.btn:active { transform: translateY(1px); }
+/* ── Utility ───────────────────────────────────────────── */
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;cursor:pointer;border:none;background:none;}
 
-.btn-primary {
-  background: linear-gradient(135deg, var(--mint), var(--mint-2));
-  color: #04200e;
-  box-shadow: 0 0 0 transparent;
+.label{
+  display:block;
+  font-size:13px;font-weight:600;letter-spacing:2px;text-transform:uppercase;
+  color:#37e6ab;margin:0 0 14px;
 }
-.btn-primary:hover { box-shadow: 0 0 22px var(--mint-glow), 0 0 60px rgba(55,230,171,.12); }
-
-.btn-ghost {
-  background: transparent;
-  color: var(--ink);
-  border: 1.5px solid var(--border-h);
-}
-.btn-ghost:hover { border-color: var(--mint); color: var(--mint); }
-
-.btn-sm { padding: 9px 18px; font-size: .82rem; }
-
-/* ─── Nav ──────────────────────────────────────────────── */
-nav {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-  height: var(--nav-h);
-  background: rgba(4,7,11,.82);
-  backdrop-filter: blur(16px) saturate(160%);
-  -webkit-backdrop-filter: blur(16px) saturate(160%);
-  border-bottom: 1px solid var(--border);
-}
-.nav-inner {
-  max-width: var(--max); margin: 0 auto; padding: 0 24px;
-  height: 100%; display: flex; align-items: center; gap: 32px;
-}
-.nav-logo {
-  display: flex; align-items: center; gap: 10px;
-  font-family: var(--font-serif); font-weight: 600; font-size: 1.05rem;
-  color: var(--ink); text-decoration: none;
-  flex-shrink: 0;
-}
-.nav-logo svg { width: 26px; height: 26px; }
-.nav-links { display: flex; align-items: center; gap: 28px; margin-left: auto; }
-.nav-links a {
-  font-size: .87rem; color: var(--ink-mid); font-weight: 500;
-  transition: color .15s;
-}
-.nav-links a:hover { color: var(--ink); }
-.nav-links a:focus-visible { outline: 2px solid var(--mint); outline-offset: 3px; border-radius: 4px; }
-@media (max-width: 640px) {
-  .nav-links .nav-text-links { display: none; }
+h2{
+  font-family:'Lora',serif;font-weight:500;
+  font-size:clamp(28px,4vw,46px);line-height:1.12;letter-spacing:-.4px;
+  margin:0 0 28px;color:#f2f8f5;
 }
 
-/* ─── SVG Icon reuse ───────────────────────────────────── */
-.icon-ct { display: inline-block; vertical-align: middle; }
-
-/* ─── Hero ─────────────────────────────────────────────── */
-#hero {
-  min-height: 100svh;
-  display: flex; flex-direction: column; align-items: center;
-  padding-top: var(--nav-h);
-  overflow: hidden;
-}
-.hero-top {
-  flex: 1;
-  display: flex; flex-direction: column; justify-content: center; align-items: center;
-  text-align: center;
-  padding: 56px 24px 0;
-  max-width: 820px; margin: 0 auto;
-}
-.hero-eyebrow {
-  display: inline-flex; align-items: center; gap: 9px;
-  font-size: .72rem; font-weight: 600; letter-spacing: .14em;
-  text-transform: uppercase; color: var(--ink-mid);
-  margin-bottom: 28px;
-}
-.eyebrow-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  background: var(--mint);
-  box-shadow: 0 0 8px var(--mint), 0 0 18px rgba(55,230,171,.5);
-  animation: pulse-dot 2s ease-in-out infinite;
-}
-@keyframes pulse-dot {
-  0%, 100% { box-shadow: 0 0 8px var(--mint), 0 0 18px rgba(55,230,171,.5); }
-  50%       { box-shadow: 0 0 14px var(--mint), 0 0 36px rgba(55,230,171,.7); }
-}
-
-#hero h1 { margin-bottom: 32px; }
-
-/* ECG strip */
-.ecg-wrap {
-  width: 100vw;
-  position: relative;
-  overflow: hidden;
-  margin: 0 0 28px;
-  line-height: 0;
-}
-.ecg-svg { display: block; width: 100%; height: 80px; }
-
-.hero-sub {
-  max-width: 640px;
-  font-size: 1.05rem;
-  color: var(--ink-mid);
-  margin-bottom: 36px;
-}
-
-.hero-ctas { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; margin-bottom: 48px; }
-
-.hero-concept {
-  max-width: 680px;
-  font-size: .92rem;
-  color: var(--ink-dim);
-  margin-bottom: 36px;
-  line-height: 1.7;
-}
-
-.hero-proofs {
-  display: flex; flex-wrap: wrap; justify-content: center; gap: 24px;
-  padding-bottom: 40px;
-}
-.proof-item {
-  display: flex; align-items: center; gap: 8px;
-  font-size: .84rem; color: var(--ink-mid); font-weight: 500;
-}
-.proof-icon { width: 18px; height: 18px; flex-shrink: 0; }
-
-/* ─── Section: Who We Are ─────────────────────────────── */
-#who { background: var(--bg-2); }
-.who-inner {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 56px;
-  align-items: start;
-}
-@media (max-width: 760px) { .who-inner { grid-template-columns: 1fr; gap: 40px; } }
-
-.who-text h2 { margin-bottom: 24px; }
-.who-text p { margin-bottom: 16px; }
-
-.join-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 36px 32px;
-  transition: border-color .2s, box-shadow .2s;
-}
-.join-card:hover { border-color: var(--border-h); box-shadow: 0 0 30px rgba(55,230,171,.06); }
-.join-card h3 { font-family: var(--font-serif); font-size: 1.3rem; margin-bottom: 12px; }
-.join-card p { font-size: .9rem; margin-bottom: 24px; }
-
-/* ─── Section: Departments ────────────────────────────── */
-#depts h2 { margin-bottom: 16px; }
-#depts .section-sub { margin-bottom: 48px; font-size: 1rem; }
-
-.dept-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
-}
-.dept-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 28px 24px;
-  display: flex; flex-direction: column; gap: 12px;
-  transition: border-color .2s, box-shadow .2s, transform .2s;
-}
-.dept-card:hover {
-  border-color: var(--border-h);
-  box-shadow: 0 0 36px rgba(55,230,171,.07);
-  transform: translateY(-2px);
-}
-.dept-icon {
-  width: 36px; height: 36px;
-  background: rgba(55,230,171,.1);
-  border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
-}
-.dept-icon svg { width: 20px; height: 20px; }
-.dept-card h3 { font-family: var(--font-serif); font-size: 1.1rem; color: var(--ink); }
-.dept-card p  { font-size: .85rem; color: var(--ink-dim); line-height: 1.55; }
-.dept-card.triage {
-  border-style: dashed;
-  background: transparent;
-}
-.dept-card.triage h3 { color: var(--mint); }
-
-/* ─── Section: Specialists ────────────────────────────── */
-#bench { background: var(--bg-2); }
-#bench h2 { margin-bottom: 12px; }
-#bench .section-sub { margin-bottom: 36px; }
-
-.filter-bar {
-  display: flex; flex-wrap: wrap; gap: 10px;
-  margin-bottom: 40px;
-}
-.filter-btn {
-  padding: 8px 18px;
-  border: 1.5px solid var(--border);
-  border-radius: 40px;
-  background: transparent;
-  color: var(--ink-mid);
-  font-family: var(--font-sans); font-size: .82rem; font-weight: 500;
-  cursor: pointer; transition: all .15s;
-}
-.filter-btn:hover { border-color: var(--border-h); color: var(--ink); }
-.filter-btn.active {
-  background: var(--mint);
-  border-color: var(--mint);
-  color: #04200e;
-  font-weight: 600;
-}
-.filter-btn:focus-visible { outline: 2px solid var(--mint); outline-offset: 3px; }
-
-.bench-count {
-  font-size: .82rem; color: var(--ink-dim); margin-bottom: 24px;
-}
-
-.bench-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-}
-
-.spec-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 26px 24px;
-  display: flex; flex-direction: column; gap: 14px;
-  transition: border-color .2s, box-shadow .2s;
-}
-.spec-card:hover { border-color: var(--border-h); box-shadow: 0 0 30px rgba(55,230,171,.06); }
-.spec-card[hidden] { display: none; }
-
-.spec-head { display: flex; align-items: flex-start; gap: 14px; }
-.spec-avatar {
-  width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
-  background: linear-gradient(135deg, var(--mint), var(--mint-2));
-  display: flex; align-items: center; justify-content: center;
-  font-weight: 600; font-size: .9rem; color: #04200e;
-  font-family: var(--font-sans);
-}
-.spec-meta { flex: 1; }
-.spec-name {
-  font-family: var(--font-serif); font-weight: 600; font-size: 1rem;
-  color: var(--ink); display: flex; align-items: center; gap: 8px;
-}
-.cert-badge {
-  width: 16px; height: 16px; opacity: .8;
-  flex-shrink: 0;
-}
-.spec-role { font-size: .8rem; color: var(--ink-dim); margin-top: 2px; }
-.spec-bio  { font-size: .87rem; color: var(--ink-mid); line-height: 1.6; }
-.spec-tags { display: flex; flex-wrap: wrap; gap: 7px; }
-.tag {
-  padding: 4px 10px; border-radius: 40px;
-  background: rgba(55,230,171,.08);
-  border: 1px solid rgba(55,230,171,.14);
-  font-size: .74rem; color: var(--mint); font-weight: 500;
-}
-.spec-footer {
-  display: flex; justify-content: space-between; align-items: center;
-  border-top: 1px solid var(--border); padding-top: 14px;
-  font-size: .8rem; color: var(--ink-dim);
-}
-.shout-badge {
-  display: inline-flex; align-items: center; gap: 5px;
-  color: var(--mint); font-weight: 500; font-size: .78rem;
-}
-
-/* ─── Section: Sample Diagnosis ───────────────────────── */
-#diagnosis-sample { background: var(--bg); }
-#diagnosis-sample h2 { margin-bottom: 14px; }
-#diagnosis-sample .section-sub { margin-bottom: 48px; }
-
-.report-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  max-width: 780px; margin: 0 auto;
-}
-.report-header {
-  background: rgba(55,230,171,.06);
-  border-bottom: 1px solid var(--border);
-  padding: 20px 28px;
-  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
-}
-.report-title { font-family: var(--font-serif); font-size: 1rem; color: var(--ink); }
-.report-meta  { font-size: .78rem; color: var(--ink-dim); font-family: 'Courier New', monospace; }
-.report-body  { padding: 28px; display: flex; flex-direction: column; gap: 20px; }
-
-.finding {
-  display: flex; gap: 16px; align-items: flex-start;
-  padding-bottom: 20px; border-bottom: 1px solid var(--border);
-}
-.finding:last-of-type { border-bottom: none; padding-bottom: 0; }
-.severity {
-  padding: 3px 9px; border-radius: 4px;
-  font-size: .68rem; font-weight: 700; letter-spacing: .08em;
-  font-family: var(--font-sans); white-space: nowrap; flex-shrink: 0;
-  margin-top: 1px;
-}
-.sev-critical { background: rgba(239,68,68,.18); color: #f87171; border: 1px solid rgba(239,68,68,.3); }
-.sev-high     { background: rgba(249,115,22,.15); color: #fb923c; border: 1px solid rgba(249,115,22,.25); }
-.sev-medium   { background: rgba(234,179,8,.12);  color: #facc15; border: 1px solid rgba(234,179,8,.2); }
-
-.finding-content h4 { font-family: var(--font-sans); font-size: .9rem; font-weight: 600; color: var(--ink); margin-bottom: 5px; }
-.finding-content p  { font-size: .84rem; color: var(--ink-mid); line-height: 1.55; }
-.finding-path {
-  font-family: 'Courier New', monospace; font-size: .78rem;
-  color: var(--mint); opacity: .8; display: block; margin-top: 6px;
-}
-
-.report-signoff {
-  background: rgba(55,230,171,.04);
-  border-top: 1px solid var(--border);
-  padding: 22px 28px;
-  display: flex; gap: 14px; align-items: flex-start;
-}
-.signoff-avatar {
-  width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
-  background: linear-gradient(135deg, var(--mint), var(--mint-2));
-  display: flex; align-items: center; justify-content: center;
-  font-size: .75rem; font-weight: 700; color: #04200e;
-}
-.signoff-text { font-size: .87rem; color: var(--ink-mid); font-style: italic; line-height: 1.6; }
-.signoff-name { font-style: normal; font-weight: 600; color: var(--ink); font-size: .82rem; margin-top: 6px; display: block; }
-
-/* ─── Section: The Exchange ───────────────────────────── */
-#exchange { background: var(--bg-2); }
-#exchange h2 { margin-bottom: 16px; }
-#exchange .section-sub { margin-bottom: 52px; }
-
-.exchange-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 28px;
-}
-@media (max-width: 640px) { .exchange-grid { grid-template-columns: 1fr; } }
-
-.exchange-col {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 32px 28px;
-}
-.exchange-col h3 {
-  font-family: var(--font-serif); font-size: 1rem; color: var(--ink-mid);
-  text-transform: uppercase; letter-spacing: .1em; font-size: .75rem;
-  margin-bottom: 22px;
-}
-.exchange-list { list-style: none; display: flex; flex-direction: column; gap: 16px; }
-.exchange-list li {
-  display: flex; gap: 12px; align-items: flex-start;
-  font-size: .9rem; color: var(--ink-mid);
-}
-.exchange-list li .ex-icon {
-  width: 20px; height: 20px; flex-shrink: 0; margin-top: 1px;
-}
-.exchange-list strong { color: var(--ink); }
-
-/* ─── Reveal animation ────────────────────────────────── */
-.reveal {
-  opacity: 0;
-  transform: translateY(22px);
-  transition: opacity .6s ease, transform .6s ease;
-}
-.reveal.visible { opacity: 1; transform: translateY(0); }
-
-@media (prefers-reduced-motion: reduce) {
-  .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
-  .eyebrow-dot { animation: none !important; }
-  .ecg-blip { animation-play-state: paused !important; }
-  #ecg-path-reveal { animation: none !important; stroke-dashoffset: 0 !important; }
-}
-
-/* ─── Footer ───────────────────────────────────────────── */
-footer {
-  background: var(--bg);
-  border-top: 1px solid var(--border);
-  padding: 56px 0 40px;
-}
-.footer-inner {
-  max-width: var(--max); margin: 0 auto; padding: 0 24px;
-  display: flex; flex-direction: column; gap: 36px;
-}
-.footer-top {
-  display: flex; justify-content: space-between; align-items: flex-start;
-  flex-wrap: wrap; gap: 28px;
-}
-.footer-brand { display: flex; align-items: center; gap: 10px; }
-.footer-brand svg { width: 28px; height: 28px; }
-.footer-brand-name { font-family: var(--font-serif); font-weight: 600; font-size: 1.05rem; }
-.footer-tagline { font-size: .83rem; color: var(--ink-dim); margin-top: 4px; }
-
-.footer-links { display: flex; flex-wrap: wrap; gap: 20px 32px; }
-.footer-links a { font-size: .85rem; color: var(--ink-dim); transition: color .15s; }
-.footer-links a:hover { color: var(--mint); }
-
-.footer-disclaimer {
-  border-top: 1px solid var(--border);
-  padding-top: 28px;
-  font-size: .78rem; color: var(--ink-dim); line-height: 1.65;
-  max-width: 680px;
-}
+/* ── Hover helpers (applied via JS for non-touch) ─────── */
+.hov-glow:hover{box-shadow:0 0 26px rgba(55,230,171,.55)!important;}
+.hov-card:hover{border-color:rgba(55,230,171,.4)!important;transform:translateY(-3px)!important;box-shadow:0 16px 40px rgba(0,0,0,.4),0 0 30px rgba(55,230,171,.07)!important;}
+.hov-link:hover{color:#37e6ab!important;}
 </style>
 </head>
 <body>
 
-<!-- SVG Defs: cross-tick symbol -->
-<svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden">
-  <defs>
-    <symbol id="cross-tick" viewBox="0 0 24 24" fill="none">
-      <!-- Vertical bar -->
-      <rect x="10.5" y="2" width="3" height="20" rx="1.5" fill="currentColor"/>
-      <!-- Left horizontal bar -->
-      <rect x="2" y="10.5" width="8.5" height="3" rx="1.5" fill="currentColor"/>
-      <!-- Tick springs from middle of vertical bar (right side) -->
-      <polyline points="12,12 16.5,18 23,7" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-    </symbol>
-    <!-- Glow filter for ECG -->
-    <filter id="ecg-glow" x="-10%" y="-100%" width="120%" height="300%">
-      <feGaussianBlur stdDeviation="3" result="blur"/>
-      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-    </filter>
-    <filter id="blip-glow" x="-200%" y="-200%" width="500%" height="500%">
-      <feGaussianBlur stdDeviation="4" result="blur"/>
-      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-    </filter>
-  </defs>
-</svg>
+<!-- ── Fixed backgrounds ─────────────────────────────── -->
+<div aria-hidden="true" style="position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(123,247,207,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(123,247,207,.05) 1px,transparent 1px);background-size:46px 46px;-webkit-mask-image:radial-gradient(ellipse 90% 80% at 50% 38%,#000 30%,transparent 80%);mask-image:radial-gradient(ellipse 90% 80% at 50% 38%,#000 30%,transparent 80%);"></div>
+<div aria-hidden="true" style="position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 60% 50% at 50% 30%,rgba(55,230,171,.08),transparent 70%);"></div>
 
-<!-- ─── NAV ──────────────────────────────────────────────── -->
-<nav role="navigation" aria-label="Main navigation">
-  <div class="nav-inner">
-    <a href="#" class="nav-logo" aria-label="Codeside home">
-      <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
-        <use href="#cross-tick" color="var(--mint)"/>
-      </svg>
-      Codeside
-    </a>
-    <div class="nav-links">
-      <span class="nav-text-links" style="display:flex;gap:28px">
-        <a href="#who">Who we are</a>
-        <a href="#depts">Specialties</a>
-        <a href="#bench">The bench</a>
-        <a href="#who">Join us</a>
+<!-- ── Main content ──────────────────────────────────── -->
+<div style="position:relative;z-index:1;min-height:100vh;background:transparent;">
+
+  <!-- NAV -->
+  <header style="position:sticky;top:0;z-index:30;display:flex;align-items:center;justify-content:space-between;padding:18px 32px;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);background:rgba(4,7,11,.62);border-bottom:1px solid rgba(123,247,207,.08);">
+    <a href="#" style="display:flex;align-items:center;gap:11px;text-decoration:none;" aria-label="Codeside home">
+      <span style="display:inline-flex;filter:drop-shadow(0 0 5px rgba(55,230,171,.55));" aria-hidden="true">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+          <path d="M12 4 V20" stroke="#37e6ab" stroke-width="2.7" stroke-linecap="round"/>
+          <path d="M6 12 L10 16 L19 5" stroke="#37e6ab" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
       </span>
-      <button class="btn btn-primary btn-sm" onclick="document.getElementById('request-form').scrollIntoView({behavior:'smooth'})">
-        Request a diagnosis
-      </button>
-    </div>
-  </div>
-</nav>
+      <span style="font-family:'Lora',serif;font-size:20px;font-weight:600;letter-spacing:.2px;color:#f2f8f5;">Codeside</span>
+    </a>
+    <nav style="display:flex;align-items:center;gap:28px;" aria-label="Main navigation">
+      <a href="#bench" class="hov-link" style="color:#b7c9c2;font-size:14.5px;font-weight:500;transition:color .15s;">The bench</a>
+      <a href="#departments" class="hov-link" style="color:#b7c9c2;font-size:14.5px;font-weight:500;transition:color .15s;">Departments</a>
+      <a href="#request" class="hov-glow" style="display:inline-flex;align-items:center;padding:9px 17px;border-radius:9px;background:#37e6ab;color:#042018;font-size:14px;font-weight:600;box-shadow:0 0 18px rgba(55,230,171,.3);transition:box-shadow .2s;">Request a diagnosis</a>
+    </nav>
+  </header>
 
-<!-- ─── HERO ─────────────────────────────────────────────── -->
-<section id="hero" aria-labelledby="hero-headline">
-  <div class="hero-top">
-    <div class="hero-eyebrow" aria-label="Eyebrow: Healthcare for vibe-coded apps">
-      <span class="eyebrow-dot" aria-hidden="true"></span>
-      Healthcare for vibe-coded apps
+  <!-- HERO -->
+  <section style="position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;padding:60px 24px 0;max-width:1000px;margin:0 auto;" aria-labelledby="hero-h1">
+
+    <!-- Eyebrow pill -->
+    <div style="display:inline-flex;align-items:center;gap:9px;padding:7px 15px;border-radius:999px;border:1px solid rgba(55,230,171,.28);background:rgba(55,230,171,.06);margin-bottom:30px;">
+      <span class="cd-pulse-dot" aria-hidden="true" style="width:8px;height:8px;border-radius:50%;background:#37e6ab;animation:cdPulse 2.2s ease-in-out infinite;"></span>
+      <span style="font-size:13px;font-weight:500;letter-spacing:.4px;color:#9af0cf;">Healthcare for vibe-coded apps</span>
     </div>
 
-    <h1 id="hero-headline">
-      A second opinion,<br>before it's <i class="accent">critical.</i>
+    <h1 id="hero-h1" style="font-family:'Lora',serif;font-weight:500;font-size:clamp(38px,6.2vw,72px);line-height:1.06;letter-spacing:-.5px;margin:0 0 8px;color:#f4faf7;text-wrap:balance;max-width:14ch;">
+      A second opinion, before it's <span style="font-style:italic;color:#37e6ab;text-shadow:0 0 26px rgba(55,230,171,.45);">critical.</span>
     </h1>
-  </div>
 
-  <!-- ECG strip — full bleed -->
-  <div class="ecg-wrap" aria-hidden="true">
-    <svg class="ecg-svg" id="ecg-svg" viewBox="0 0 1440 80" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-      <!-- Faint background line -->
-      <path id="ecg-path-bg"
-        d="M0,52 L320,52 Q340,47 360,52 L430,52 L445,56 L455,12 L467,70 L478,50 Q492,46 506,52 L1440,52"
-        fill="none" stroke="rgba(55,230,171,0.12)" stroke-width="1.5"/>
+    <!-- ECG strip — full bleed -->
+    <div aria-hidden="true" style="position:relative;width:100vw;max-width:1280px;height:132px;margin:14px 0 6px;left:50%;transform:translateX(-50%);">
+      <svg viewBox="0 0 1600 140" preserveAspectRatio="none" width="100%" height="100%" style="display:block;overflow:visible;">
+        <defs>
+          <linearGradient id="cd-ecg-fade" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#37e6ab" stop-opacity="0"/>
+            <stop offset="0.18" stop-color="#37e6ab" stop-opacity="0.9"/>
+            <stop offset="0.82" stop-color="#7bf7cf" stop-opacity="0.9"/>
+            <stop offset="1" stop-color="#7bf7cf" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <!-- Faint static trace -->
+        <path d="M0,70 H600 C622,70 626,57 638,57 C650,57 654,70 676,70 H716 L731,70 L739,84 L750,16 L761,120 L772,52 L781,70 H822 C852,70 868,50 890,50 C912,50 928,70 958,70 H1600"
+          fill="none" stroke="rgba(55,230,171,.13)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- Animated glow trace -->
+        <path d="M0,70 H600 C622,70 626,57 638,57 C650,57 654,70 676,70 H716 L731,70 L739,84 L750,16 L761,120 L772,52 L781,70 H822 C852,70 868,50 890,50 C912,50 928,70 958,70 H1600"
+          fill="none" stroke="url(#cd-ecg-fade)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"
+          style="filter:drop-shadow(0 0 6px rgba(55,230,171,.55));animation:cdGlow 3s ease-in-out infinite;"/>
+        <!-- Travelling blip -->
+        <circle id="cd-blip" r="5" fill="#eafff6" vector-effect="non-scaling-stroke"
+          style="filter:drop-shadow(0 0 8px rgba(123,247,207,.95)) drop-shadow(0 0 16px rgba(55,230,171,.7));"/>
+      </svg>
+    </div>
 
-      <!-- Animated reveal line -->
-      <path id="ecg-path-reveal"
-        d="M0,52 L320,52 Q340,47 360,52 L430,52 L445,56 L455,12 L467,70 L478,50 Q492,46 506,52 L1440,52"
-        fill="none" stroke="url(#ecg-grad)" stroke-width="2" filter="url(#ecg-glow)"/>
-
-      <!-- Travelling blip -->
-      <circle id="ecg-blip" r="5" fill="var(--mint)" filter="url(#blip-glow)">
-        <animateMotion dur="6s" repeatCount="indefinite" rotate="auto">
-          <mpath href="#ecg-path-reveal"/>
-        </animateMotion>
-      </circle>
-
-      <defs>
-        <linearGradient id="ecg-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stop-color="rgba(55,230,171,0)"/>
-          <stop offset="40%" stop-color="rgba(55,230,171,0.5)"/>
-          <stop offset="100%" stop-color="#37e6ab"/>
-        </linearGradient>
-      </defs>
-    </svg>
-  </div>
-
-  <div class="hero-top" style="padding-top:0;flex:unset">
-    <p class="hero-sub">
-      Codeside is a community of senior engineers who'll look over your vibe-coded app
-      and tell you, plainly, what to fix — security, auth, scale.
-      Most do it for a shoutout, not a fee. No middleman, no sales call.
+    <p style="font-size:clamp(16px,1.7vw,18.5px);line-height:1.6;color:#c2d3cc;max-width:60ch;margin:8px 0 30px;">
+      AI can write code, but it makes mistakes it can't catch on its own. We're a community of senior engineers who give it a human review — before a small crack turns critical.
     </p>
 
-    <div class="hero-ctas">
-      <button class="btn btn-primary" onclick="document.getElementById('request-form').scrollIntoView({behavior:'smooth'})">
-        Request a diagnosis
-      </button>
-      <a href="#bench" class="btn btn-ghost">View the practice</a>
+    <div style="display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin-bottom:34px;">
+      <a id="request" href="#request-form" class="hov-glow" style="display:inline-flex;align-items:center;gap:9px;padding:15px 26px;border-radius:11px;background:#37e6ab;color:#042018;font-size:16px;font-weight:600;box-shadow:0 0 26px rgba(55,230,171,.4);transition:box-shadow .2s,transform .15s;">Request a diagnosis</a>
+      <a href="#bench" style="display:inline-flex;align-items:center;gap:9px;padding:15px 26px;border-radius:11px;background:transparent;border:1px solid rgba(123,247,207,.32);color:#d7e6e0;font-size:16px;font-weight:500;transition:border-color .2s,background .2s;">View the practice</a>
     </div>
 
-    <p class="hero-concept">
-      Describe your app or drop a repo — a vetted senior engineer reviews it and hands back
-      a plain-language diagnosis: what's critical, what can wait, and the order to fix it in.
-    </p>
-
-    <div class="hero-proofs">
-      <div class="proof-item">
-        <svg class="proof-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none">
-          <use href="#cross-tick" color="var(--mint)"/>
-        </svg>
-        Real senior specialists, matched to your stack
-      </div>
-      <div class="proof-item">
-        <svg class="proof-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none">
-          <use href="#cross-tick" color="var(--mint)"/>
-        </svg>
-        Most work for a shoutout, not a fee
-      </div>
-      <div class="proof-item">
-        <svg class="proof-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none">
-          <use href="#cross-tick" color="var(--mint)"/>
-        </svg>
-        No sign-up, no sales call
-      </div>
+    <div style="display:flex;flex-wrap:wrap;gap:14px 30px;justify-content:center;padding-bottom:72px;">
+      <span style="display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:500;color:#cdddd6;">
+        <span style="display:inline-flex;filter:drop-shadow(0 0 4px rgba(55,230,171,.5));" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 4 V20" stroke="#37e6ab" stroke-width="2.7" stroke-linecap="round"/><path d="M6 12 L10 16 L19 5" stroke="#37e6ab" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        Reviewed by senior engineers
+      </span>
+      <span style="display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:500;color:#cdddd6;">
+        <span style="display:inline-flex;filter:drop-shadow(0 0 4px rgba(55,230,171,.5));" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 4 V20" stroke="#37e6ab" stroke-width="2.7" stroke-linecap="round"/><path d="M6 12 L10 16 L19 5" stroke="#37e6ab" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        Prioritized, plain-language fixes
+      </span>
+      <span style="display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:500;color:#cdddd6;">
+        <span style="display:inline-flex;filter:drop-shadow(0 0 4px rgba(55,230,171,.5));" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 4 V20" stroke="#37e6ab" stroke-width="2.7" stroke-linecap="round"/><path d="M6 12 L10 16 L19 5" stroke="#37e6ab" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        Most work for a LinkedIn shoutout
+      </span>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- ─── WHO WE ARE ───────────────────────────────────────── -->
-<section id="who" aria-labelledby="who-heading">
-  <div class="wrap">
-    <div class="who-inner">
-      <div class="who-text reveal">
-        <span class="label">Who we are</span>
-        <h2 id="who-heading">A community,<br>not an agency.</h2>
-        <p>We're senior engineers who remember lying awake at 2am wondering what we missed — the auth bypass we didn't notice, the N+1 query waiting to crater production. We've been there, and we didn't always have someone to ask.</p>
-        <p>AI made everyone a builder overnight. But it didn't make anyone an architect. The code compiles. The demo works. And then it hits real users, and real problems show up. We're here for the gap between "it runs" and "it holds."</p>
-        <p>We do this for the craft, and for a shoutout. Not invoices. No retainers. No upsells. A community of people who've been around long enough to know exactly what breaks and when — and who want to pass that on.</p>
-      </div>
-
-      <div class="reveal" style="transition-delay:.15s">
-        <div class="join-card">
-          <span class="label">Join the bench</span>
-          <h3>Got the experience? Pass it on.</h3>
-          <p>If you've got battle-tested experience — and a good eye for what vibe-coded apps tend to get wrong — we'd love to have you on the bench. Low commitment, high signal. Help a builder ship something solid.</p>
-          <a href="#request-form" class="btn btn-primary btn-sm">Join the community</a>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ─── DEPARTMENTS ───────────────────────────────────────── -->
-<section id="depts" aria-labelledby="depts-heading">
-  <div class="wrap">
-    <span class="label reveal">Specialties</span>
-    <h2 id="depts-heading" class="reveal" style="transition-delay:.05s">Every specialty<br>your AI skipped.</h2>
-    <p class="section-sub reveal" style="transition-delay:.1s">AI-generated code tends to get the happy path right and skip everything after it. Our specialists cover the parts that matter most when real things go wrong.</p>
-
-    <div class="dept-grid">
-      <div class="dept-card reveal">
-        <div class="dept-icon">
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <use href="#cross-tick" color="var(--mint)"/>
-          </svg>
-        </div>
-        <h3>Engineering</h3>
-        <p>Frontend, backend, architecture, APIs, mobile. The foundational layer AI gets mostly right — and subtly wrong in all the places that hurt later.</p>
-      </div>
-      <div class="dept-card reveal" style="transition-delay:.05s">
-        <div class="dept-icon">
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <use href="#cross-tick" color="var(--mint)"/>
-          </svg>
-        </div>
-        <h3>AI / Data</h3>
-        <p>LLM integration, RAG pipelines, agents, ML, data engineering. The stack that AI tools know how to produce but can't audit for retrieval quality, PII exposure, or scale.</p>
-      </div>
-      <div class="dept-card reveal" style="transition-delay:.1s">
-        <div class="dept-icon">
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <use href="#cross-tick" color="var(--mint)"/>
-          </svg>
-        </div>
-        <h3>Security</h3>
-        <p>AppSec, cloud security, pen testing, auth &amp; identity. The discipline AI-generated code most consistently skips — and where the consequences are immediate.</p>
-      </div>
-      <div class="dept-card reveal" style="transition-delay:.15s">
-        <div class="dept-icon">
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <use href="#cross-tick" color="var(--mint)"/>
-          </svg>
-        </div>
-        <h3>Design / UX</h3>
-        <p>Product design, UX research, design systems, accessibility. AI interfaces that work functionally but fail the humans using them.</p>
-      </div>
-      <div class="dept-card reveal" style="transition-delay:.2s">
-        <div class="dept-icon">
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <use href="#cross-tick" color="var(--mint)"/>
-          </svg>
-        </div>
-        <h3>DevOps</h3>
-        <p>CI/CD, cloud setup, infrastructure, deployment. The gap between "it deploys" and "it deploys safely, reproducibly, and doesn't page you at 3am."</p>
-      </div>
-      <div class="dept-card triage reveal" style="transition-delay:.25s">
-        <div class="dept-icon">
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <use href="#cross-tick" color="var(--mint)"/>
-          </svg>
-        </div>
-        <h3>Not sure? Get triaged.</h3>
-        <p>Describe your app and we'll route it to the right specialist. If you don't know what to worry about, that's the most important reason to ask.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ─── THE SPECIALISTS ──────────────────────────────────── -->
-<section id="bench" aria-labelledby="bench-heading">
-  <div class="wrap">
-    <span class="label reveal">The bench</span>
-    <h2 id="bench-heading" class="reveal" style="transition-delay:.05s">Board-certified,<br>by reputation.</h2>
-    <p class="section-sub reveal" style="transition-delay:.1s">Every specialist has been doing this long enough to know what actually breaks in production — not just what the docs say.</p>
-
-    <div class="filter-bar reveal" role="group" aria-label="Filter by specialty" style="transition-delay:.15s">
-      <button class="filter-btn active" data-filter="all" onclick="filterBench(this,'all')">All</button>
-      <button class="filter-btn" data-filter="engineering" onclick="filterBench(this,'engineering')">Engineering</button>
-      <button class="filter-btn" data-filter="ai-data" onclick="filterBench(this,'ai-data')">AI / Data</button>
-      <button class="filter-btn" data-filter="security" onclick="filterBench(this,'security')">Security</button>
-      <button class="filter-btn" data-filter="design" onclick="filterBench(this,'design')">Design / UX</button>
-      <button class="filter-btn" data-filter="devops" onclick="filterBench(this,'devops')">DevOps</button>
+  <!-- WHO WE ARE -->
+  <section data-reveal style="max-width:1000px;margin:0 auto;padding:54px 24px 20px;">
+    <span class="label">Who we are</span>
+    <h2 style="max-width:18ch;">A community, not an agency.</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:26px;max-width:760px;">
+      <p style="font-size:16.5px;line-height:1.68;color:#c2d3cc;">Most of us remember lying awake after a launch, replaying the code in our heads, wondering what we missed. The bug that wasn't caught. The endpoint left wide open.</p>
+      <p style="font-size:16.5px;line-height:1.68;color:#c2d3cc;">AI made everyone a builder — but not an architect. Codeside is a group of senior engineers who look over what you've made, tell you the truth kindly, and point you at what matters. No invoices. No pitch.</p>
     </div>
 
-    <p class="bench-count reveal" id="bench-count" aria-live="polite" style="transition-delay:.2s">Showing 10 specialists</p>
-
-    <div class="bench-grid" id="bench-grid">
-
-      <!-- Engineering 1: Chinmay Patil (real) -->
-      <article class="spec-card reveal" data-dept="engineering ai-data">
-        <div class="spec-head">
-          <div class="spec-avatar" aria-hidden="true">CP</div>
-          <div class="spec-meta">
-            <div class="spec-name">
-              Chinmay Patil
-              <svg class="cert-badge" viewBox="0 0 24 24" fill="none" aria-label="Board-certified specialist">
-                <use href="#cross-tick" color="var(--mint)"/>
-              </svg>
-            </div>
-            <div class="spec-role">Senior Software Engineer · 5–8 yrs · Engineering &amp; AI/Data</div>
-          </div>
-        </div>
-        <p class="spec-bio">Chinmay builds across the full stack — frontend, backend, APIs, and mobile — with a particular eye for the glue that AI-generated code tends to get wrong: the integration layer between services, the data model that won't survive a real migration, and the RAG retrieval patterns that quietly hallucinate under load. He reviews apps end-to-end and gives you a plain-language list of what to fix and in what order.</p>
-        <div class="spec-tags">
-          <span class="tag">Frontend</span>
-          <span class="tag">Backend</span>
-          <span class="tag">APIs</span>
-          <span class="tag">RAG / Retrieval</span>
-          <span class="tag">LLM Integration</span>
-        </div>
-        <div class="spec-footer">
-          <span class="shout-badge">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <use href="#cross-tick" color="var(--mint)"/>
-            </svg>
-            Works for a shoutout
-          </span>
-          <span>3–5 days</span>
-        </div>
-      </article>
-
-      <!-- Engineering 2: Priya Mehta (invented) -->
-      <article class="spec-card reveal" data-dept="engineering" style="transition-delay:.05s">
-        <div class="spec-head">
-          <div class="spec-avatar" aria-hidden="true">PM</div>
-          <div class="spec-meta">
-            <div class="spec-name">
-              Priya Mehta
-              <svg class="cert-badge" viewBox="0 0 24 24" fill="none" aria-label="Board-certified specialist">
-                <use href="#cross-tick" color="var(--mint)"/>
-              </svg>
-            </div>
-            <div class="spec-role">Staff Software Engineer · 11 yrs · Engineering</div>
-          </div>
-        </div>
-        <p class="spec-bio">Priya spent a decade at a Series B fintech building payment APIs that processed over $2B annually — which taught her exactly which database design mistakes quietly become catastrophic and which API patterns collapse under real traffic. She reviews backend architecture, data modelling, and the API surface AI tools tend to build correctly until they don't.</p>
-        <div class="spec-tags">
-          <span class="tag">Backend</span>
-          <span class="tag">APIs</span>
-          <span class="tag">System Design</span>
-          <span class="tag">PostgreSQL</span>
-          <span class="tag">Node.js</span>
-        </div>
-        <div class="spec-footer">
-          <span class="shout-badge">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <use href="#cross-tick" color="var(--mint)"/>
-            </svg>
-            Works for a shoutout
-          </span>
-          <span>4–6 days</span>
-        </div>
-      </article>
-
-      <!-- AI/Data 1: Marcus Delgado (real) -->
-      <article class="spec-card reveal" data-dept="ai-data" style="transition-delay:.1s">
-        <div class="spec-head">
-          <div class="spec-avatar" aria-hidden="true">MD</div>
-          <div class="spec-meta">
-            <div class="spec-name">
-              Marcus Delgado
-              <svg class="cert-badge" viewBox="0 0 24 24" fill="none" aria-label="Board-certified specialist">
-                <use href="#cross-tick" color="var(--mint)"/>
-              </svg>
-            </div>
-            <div class="spec-role">AI/ML Engineer · 8 yrs · AI / Data</div>
-          </div>
-        </div>
-        <p class="spec-bio">Marcus built the semantic search and recommendation pipeline at a legal-tech company processing 2 million documents a week, and led RAG system design at an enterprise AI startup. He routinely spots retrieval hallucination in naive RAG builds, chunking strategies that break at scale, and LLM integration patterns that quietly leak PII.</p>
-        <div class="spec-tags">
-          <span class="tag">LLMs</span>
-          <span class="tag">RAG</span>
-          <span class="tag">Vector DBs</span>
-          <span class="tag">Python</span>
-          <span class="tag">Agents</span>
-        </div>
-        <div class="spec-footer">
-          <span class="shout-badge">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <use href="#cross-tick" color="var(--mint)"/>
-            </svg>
-            Works for a shoutout
-          </span>
-          <span>3–5 days</span>
-        </div>
-      </article>
-
-      <!-- AI/Data 2: Aisha Okonkwo (invented) -->
-      <article class="spec-card reveal" data-dept="ai-data" style="transition-delay:.15s">
-        <div class="spec-head">
-          <div class="spec-avatar" aria-hidden="true">AO</div>
-          <div class="spec-meta">
-            <div class="spec-name">
-              Aisha Okonkwo
-              <svg class="cert-badge" viewBox="0 0 24 24" fill="none" aria-label="Board-certified specialist">
-                <use href="#cross-tick" color="var(--mint)"/>
-              </svg>
-            </div>
-            <div class="spec-role">ML Platform Engineer · 7 yrs · AI / Data</div>
-          </div>
-        </div>
-        <p class="spec-bio">Aisha built ML training and inference infrastructure at a computer vision startup from prototype to production, managing pipelines that served 40M daily predictions. She reviews AI-generated data engineering code for the things that only hurt you at scale — leaky pipelines, training/serving skew, and model versioning that becomes impossible to roll back.</p>
-        <div class="spec-tags">
-          <span class="tag">ML Pipelines</span>
-          <span class="tag">Data Engineering</span>
-          <span class="tag">LangChain</span>
-          <span class="tag">Python</span>
-          <span class="tag">Airflow</span>
-        </div>
-        <div class="spec-footer">
-          <span class="shout-badge">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <use href="#cross-tick" color="var(--mint)"/>
-            </svg>
-            Works for a shoutout
-          </span>
-          <span>5–7 days</span>
-        </div>
-      </article>
-
-      <!-- Security 1: Dan Kowalski (real) -->
-      <article class="spec-card reveal" data-dept="security" style="transition-delay:.2s">
-        <div class="spec-head">
-          <div class="spec-avatar" aria-hidden="true">DK</div>
-          <div class="spec-meta">
-            <div class="spec-name">
-              Dan Kowalski
-              <svg class="cert-badge" viewBox="0 0 24 24" fill="none" aria-label="Board-certified specialist">
-                <use href="#cross-tick" color="var(--mint)"/>
-              </svg>
-            </div>
-            <div class="spec-role">Application Security Engineer · 13 yrs · Security</div>
-          </div>
-        </div>
-        <p class="spec-bio">Dan ran AppSec at a payment processor where he found and disclosed three critical IDOR vulnerabilities before a public audit and built the secure-SDLC programme that replaced ad-hoc pen-testing. He has seen every class of vulnerability that Cursor and Copilot tend to introduce — and can tell you in plain language what is dangerous versus what is just untidy.</p>
-        <div class="spec-tags">
-          <span class="tag">AppSec</span>
-          <span class="tag">Pen Testing</span>
-          <span class="tag">Auth / Identity</span>
-          <span class="tag">OWASP</span>
-          <span class="tag">Node.js</span>
-        </div>
-        <div class="spec-footer">
-          <span class="shout-badge">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <use href="#cross-tick" color="var(--mint)"/>
-            </svg>
-            Works for a shoutout
-          </span>
-          <span>2–3 days</span>
-        </div>
-      </article>
-
-      <!-- Security 2: Femi Adeyemi (invented) -->
-      <article class="spec-card reveal" data-dept="security" style="transition-delay:.25s">
-        <div class="spec-head">
-          <div class="spec-avatar" aria-hidden="true">FA</div>
-          <div class="spec-meta">
-            <div class="spec-name">
-              Femi Adeyemi
-              <svg class="cert-badge" viewBox="0 0 24 24" fill="none" aria-label="Board-certified specialist">
-                <use href="#cross-tick" color="var(--mint)"/>
-              </svg>
-            </div>
-            <div class="spec-role">Cloud Security Engineer · 9 yrs · Security</div>
-          </div>
-        </div>
-        <p class="spec-bio">Femi led cloud security at a Series C healthtech through SOC 2 Type II certification and two successful penetration tests. He specialises in the IAM misconfigurations, overly-wide storage permissions, and hardcoded secrets in Dockerfiles that AI tools consistently produce when setting up cloud infrastructure — often without realising they've created a door.</p>
-        <div class="spec-tags">
-          <span class="tag">Cloud Security</span>
-          <span class="tag">IAM</span>
-          <span class="tag">AWS</span>
-          <span class="tag">Terraform</span>
-          <span class="tag">SOC 2</span>
-        </div>
-        <div class="spec-footer">
-          <span class="shout-badge">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <use href="#cross-tick" color="var(--mint)"/>
-            </svg>
-            Works for a shoutout
-          </span>
-          <span>3–4 days</span>
-        </div>
-      </article>
-
-      <!-- Design 1: Sara Lindqvist (real) -->
-      <article class="spec-card reveal" data-dept="design" style="transition-delay:.3s">
-        <div class="spec-head">
-          <div class="spec-avatar" aria-hidden="true">SL</div>
-          <div class="spec-meta">
-            <div class="spec-name">
-              Sara Lindqvist
-              <svg class="cert-badge" viewBox="0 0 24 24" fill="none" aria-label="Board-certified specialist">
-                <use href="#cross-tick" color="var(--mint)"/>
-              </svg>
-            </div>
-            <div class="spec-role">Senior Product Designer · 9 yrs · Design / UX</div>
-          </div>
-        </div>
-        <p class="spec-bio">Sara led product design at two B2B SaaS companies, most recently as the founding designer at a YC-backed workflow tool where she built the design system from zero. She reviews AI-generated interfaces for flow coherence, information hierarchy, and the subtle patronising copy that LLMs love to produce.</p>
-        <div class="spec-tags">
-          <span class="tag">Product Design</span>
-          <span class="tag">Figma</span>
-          <span class="tag">UX Research</span>
-          <span class="tag">Design Systems</span>
-          <span class="tag">Accessibility</span>
-        </div>
-        <div class="spec-footer">
-          <span class="shout-badge">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <use href="#cross-tick" color="var(--mint)"/>
-            </svg>
-            Works for a shoutout
-          </span>
-          <span>4–6 days</span>
-        </div>
-      </article>
-
-      <!-- Design 2: Tomás Reyes (invented) -->
-      <article class="spec-card reveal" data-dept="design" style="transition-delay:.35s">
-        <div class="spec-head">
-          <div class="spec-avatar" aria-hidden="true">TR</div>
-          <div class="spec-meta">
-            <div class="spec-name">
-              Tomás Reyes
-              <svg class="cert-badge" viewBox="0 0 24 24" fill="none" aria-label="Board-certified specialist">
-                <use href="#cross-tick" color="var(--mint)"/>
-              </svg>
-            </div>
-            <div class="spec-role">Senior UX Researcher · 8 yrs · Design / UX</div>
-          </div>
-        </div>
-        <p class="spec-bio">Tomás has run usability research at consumer-scale products, including a fintech app with 4M active users. He reviews AI-built interfaces for the usability failures that only show up when real users touch the product — confusing error states, flows that made sense in the AI's training data but nowhere else, and accessibility gaps that block whole categories of users entirely.</p>
-        <div class="spec-tags">
-          <span class="tag">UX Research</span>
-          <span class="tag">Usability Testing</span>
-          <span class="tag">Accessibility</span>
-          <span class="tag">Mobile UX</span>
-          <span class="tag">B2C</span>
-        </div>
-        <div class="spec-footer">
-          <span class="shout-badge">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <use href="#cross-tick" color="var(--mint)"/>
-            </svg>
-            Works for a shoutout
-          </span>
-          <span>5–7 days</span>
-        </div>
-      </article>
-
-      <!-- DevOps 1: Yuki Tanaka (real) -->
-      <article class="spec-card reveal" data-dept="devops" style="transition-delay:.4s">
-        <div class="spec-head">
-          <div class="spec-avatar" aria-hidden="true">YT</div>
-          <div class="spec-meta">
-            <div class="spec-name">
-              Yuki Tanaka
-              <svg class="cert-badge" viewBox="0 0 24 24" fill="none" aria-label="Board-certified specialist">
-                <use href="#cross-tick" color="var(--mint)"/>
-              </svg>
-            </div>
-            <div class="spec-role">Staff DevOps Engineer · 10 yrs · DevOps</div>
-          </div>
-        </div>
-        <p class="spec-bio">Yuki built the CI/CD platform and Kubernetes infrastructure at a Series C healthtech, reducing deploy times from 45 minutes to 8 and achieving SOC 2 Type II along the way. She reviews AI-generated infrastructure code for the things that only hurt you at 3am — missing readiness probes, hard-coded secrets in Dockerfiles, and IAM policies that are quietly wider than intended.</p>
-        <div class="spec-tags">
-          <span class="tag">Kubernetes</span>
-          <span class="tag">CI/CD</span>
-          <span class="tag">Terraform</span>
-          <span class="tag">AWS</span>
-          <span class="tag">GitHub Actions</span>
-        </div>
-        <div class="spec-footer">
-          <span class="shout-badge">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <use href="#cross-tick" color="var(--mint)"/>
-            </svg>
-            Works for a shoutout
-          </span>
-          <span>3–4 days</span>
-        </div>
-      </article>
-
-      <!-- DevOps 2: Oleksiy Koval (invented) -->
-      <article class="spec-card reveal" data-dept="devops" style="transition-delay:.45s">
-        <div class="spec-head">
-          <div class="spec-avatar" aria-hidden="true">OK</div>
-          <div class="spec-meta">
-            <div class="spec-name">
-              Oleksiy Koval
-              <svg class="cert-badge" viewBox="0 0 24 24" fill="none" aria-label="Board-certified specialist">
-                <use href="#cross-tick" color="var(--mint)"/>
-              </svg>
-            </div>
-            <div class="spec-role">Platform Engineer · 12 yrs · DevOps</div>
-          </div>
-        </div>
-        <p class="spec-bio">Oleksiy built and maintained cloud infrastructure for a multi-tenant SaaS platform across three regions, and has reviewed more AI-generated Dockerfiles and GitHub Actions workflows than he can count. He specialises in the gap between "it deploys once" and "it deploys reliably" — environment parity, secrets management, and the alerting that nobody sets up until production goes dark.</p>
-        <div class="spec-tags">
-          <span class="tag">Docker</span>
-          <span class="tag">Cloud Setup</span>
-          <span class="tag">GitHub Actions</span>
-          <span class="tag">GCP</span>
-          <span class="tag">Observability</span>
-        </div>
-        <div class="spec-footer">
-          <span class="shout-badge">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <use href="#cross-tick" color="var(--mint)"/>
-            </svg>
-            Works for a shoutout
-          </span>
-          <span>4–5 days</span>
-        </div>
-      </article>
-
-    </div><!-- /bench-grid -->
-  </div>
-</section>
-
-<!-- ─── SAMPLE DIAGNOSIS ─────────────────────────────────── -->
-<section id="diagnosis-sample" aria-labelledby="dx-heading">
-  <div class="wrap">
-    <span class="label reveal">What you receive</span>
-    <h2 id="dx-heading" class="reveal" style="transition-delay:.05s">A plain-language<br><i class="accent">diagnosis.</i></h2>
-    <p class="section-sub reveal" style="transition-delay:.1s">Not a list of vague suggestions. A senior's verdict: what's critical, what can wait, and the order to fix it in.</p>
-
-    <div class="report-card reveal" style="transition-delay:.15s">
-      <div class="report-header">
-        <div>
-          <div class="report-title">Diagnosis — AuthFlow SaaS · Security &amp; Backend Review</div>
-          <div class="report-meta" style="margin-top:4px">Reviewed by Dan K. · Engineering + Security · 2.5 days</div>
-        </div>
-        <span class="tag" style="font-size:.72rem">3 findings</span>
-      </div>
-
-      <div class="report-body">
-        <div class="finding">
-          <span class="severity sev-critical">CRITICAL</span>
-          <div class="finding-content">
-            <h4>JWT secret hardcoded in source — exposed in repo history</h4>
-            <p>Your JWT signing secret is committed in plain text. Anyone with access to the repository — or its history — can forge authentication tokens for any user. Rotate this immediately, even before fixing the code.</p>
-            <code class="finding-path">src/lib/auth.ts:14 · config/env.example · git log --all -S "JWT_SECRET"</code>
-          </div>
-        </div>
-
-        <div class="finding">
-          <span class="severity sev-high">HIGH</span>
-          <div class="finding-content">
-            <h4>Missing authorisation check on /api/users/:id — IDOR</h4>
-            <p>The user profile endpoint validates that the caller is authenticated, but not that they own the resource they're requesting. Any logged-in user can read any other user's profile by iterating numeric IDs.</p>
-            <code class="finding-path">src/api/users/[id].ts:38 — add: if (session.userId !== params.id) return 403</code>
-          </div>
-        </div>
-
-        <div class="finding">
-          <span class="severity sev-medium">MEDIUM</span>
-          <div class="finding-content">
-            <h4>No rate limiting on auth endpoints — brute-force trivial</h4>
-            <p>Login and password-reset endpoints have no rate limiting. A brute-force attack on a 6-digit OTP would succeed in under a minute. Add exponential backoff or a simple IP-based limiter before this goes anywhere near real users.</p>
-            <code class="finding-path">src/api/auth/login.ts · src/api/auth/reset.ts — consider: upstash/ratelimit or express-rate-limit</code>
-          </div>
-        </div>
-      </div>
-
-      <div class="report-signoff">
-        <div class="signoff-avatar" aria-hidden="true">DK</div>
-        <div>
-          <p class="signoff-text">"Two ship-blockers. Fix the hardcoded secret and the IDOR today — they're not optional. The rate limiting matters but can follow in the next sprint. Everything else I saw was tidy. This app has good bones; just patch the holes."</p>
-          <span class="signoff-name">— Dan Kowalski, Application Security · 13 yrs</span>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ─── THE EXCHANGE ──────────────────────────────────────── -->
-<section id="exchange" aria-labelledby="exchange-heading">
-  <div class="wrap">
-    <span class="label reveal">The exchange</span>
-    <h2 id="exchange-heading" class="reveal" style="transition-delay:.05s">No middleman.<br>No invoice.</h2>
-    <p class="section-sub reveal" style="transition-delay:.1s">A direct exchange between builder and specialist. Simple by design.</p>
-
-    <div class="exchange-grid reveal" style="transition-delay:.15s">
-      <div class="exchange-col">
-        <h3>What you get</h3>
-        <ul class="exchange-list">
-          <li>
-            <svg class="ex-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <use href="#cross-tick" color="var(--mint)"/>
-            </svg>
-            <span><strong>A senior's verdict</strong> — not a checklist. A clear read of what's actually wrong, ranked by what matters most.</span>
-          </li>
-          <li>
-            <svg class="ex-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <use href="#cross-tick" color="var(--mint)"/>
-            </svg>
-            <span><strong>Prioritised fix list</strong> — critical issues separated from things that can wait. No noise.</span>
-          </li>
-          <li>
-            <svg class="ex-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <use href="#cross-tick" color="var(--mint)"/>
-            </svg>
-            <span><strong>Direct line to the specialist</strong> — ask follow-up questions. No intermediary, no account manager.</span>
-          </li>
-          <li>
-            <svg class="ex-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <use href="#cross-tick" color="var(--mint)"/>
-            </svg>
-            <span><strong>No sign-up required</strong> — describe your app, get a match, receive a diagnosis.</span>
-          </li>
-        </ul>
-      </div>
-
-      <div class="exchange-col" style="border-color:rgba(55,230,171,.06)">
-        <h3>What they get</h3>
-        <ul class="exchange-list">
-          <li>
-            <svg class="ex-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <use href="#cross-tick" color="var(--mint)"/>
-            </svg>
-            <span><strong>A LinkedIn shoutout</strong> from the builder — public credit for the help.</span>
-          </li>
-          <li>
-            <svg class="ex-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <use href="#cross-tick" color="var(--mint)"/>
-            </svg>
-            <span><strong>Reputation in the community</strong> — engineers who've helped ship better things.</span>
-          </li>
-          <li>
-            <svg class="ex-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <use href="#cross-tick" color="var(--mint)"/>
-            </svg>
-            <span><strong>Low-commitment giving-back</strong> — one review, when they have time. No retainers.</span>
-          </li>
-          <li>
-            <svg class="ex-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <use href="#cross-tick" color="var(--mint)"/>
-            </svg>
-            <span><strong>The craft</strong> — senior engineers like to solve real problems. This is as real as it gets.</span>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ─── REQUEST FORM ─────────────────────────────────────── -->
-<section id="request-form" aria-labelledby="form-heading" style="background:var(--bg-2)">
-  <div class="wrap" style="max-width:640px">
-    <span class="label reveal">Get started</span>
-    <h2 id="form-heading" class="reveal" style="transition-delay:.05s">Request a<br><i class="accent">diagnosis.</i></h2>
-    <p class="reveal" style="transition-delay:.1s;margin-bottom:36px">Describe your app below. We'll read it, match you to the right specialist, and follow up by email — usually within a day.</p>
-
-    <form class="reveal" style="transition-delay:.15s;display:flex;flex-direction:column;gap:18px" id="dx-form" novalidate>
+    <div style="margin-top:34px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:20px;padding:26px 30px;border-radius:16px;border:1px solid rgba(55,230,171,.3);background:linear-gradient(120deg,rgba(55,230,171,.08),rgba(55,230,171,.02));box-shadow:0 0 40px rgba(55,230,171,.06) inset;">
       <div>
-        <label for="f-name" style="font-size:.82rem;font-weight:600;color:var(--ink-mid);display:block;margin-bottom:6px">Your name</label>
+        <p style="font-family:'Lora',serif;font-style:italic;font-size:22px;color:#f2f8f5;margin:0 0 4px;">Got the experience? Moonlight as a specialist.</p>
+        <p style="font-size:14.5px;color:#a9bcb4;margin:0;">A side project for seasoned engineers — review on your own time, help people ship safely, for a LinkedIn shoutout.</p>
+      </div>
+      <a href="#request-form" class="hov-glow" style="flex:none;display:inline-flex;align-items:center;padding:13px 24px;border-radius:10px;background:#37e6ab;color:#042018;font-size:15px;font-weight:600;box-shadow:0 0 22px rgba(55,230,171,.35);transition:box-shadow .2s;">Join the community</a>
+    </div>
+  </section>
+
+  <!-- DEPARTMENTS -->
+  <section id="departments" data-reveal style="max-width:1100px;margin:0 auto;padding:64px 24px 24px;">
+    <span class="label">The departments</span>
+    <h2 style="max-width:20ch;">Five specialties. One coordinated checkup.</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px;">
+
+      <div class="hov-card" style="padding:26px;border-radius:16px;border:1px solid rgba(123,247,207,.12);background:rgba(255,255,255,.025);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);transition:border-color .25s,transform .25s,box-shadow .25s;">
+        <span aria-hidden="true" style="display:inline-flex;width:40px;height:40px;align-items:center;justify-content:center;border-radius:11px;background:rgba(55,230,171,.1);margin-bottom:16px;filter:drop-shadow(0 0 5px rgba(55,230,171,.4));"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 4 V20" stroke="#37e6ab" stroke-width="2.7" stroke-linecap="round"/><path d="M6 12 L10 16 L19 5" stroke="#37e6ab" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <h3 style="font-family:'Lora',serif;font-weight:600;font-size:21px;margin:0 0 8px;color:#f2f8f5;">Engineering</h3>
+        <p style="font-size:14.5px;line-height:1.6;color:#b7c9c2;margin:0;">Architecture, performance, and code that won't buckle under real load.</p>
+      </div>
+
+      <div class="hov-card" style="padding:26px;border-radius:16px;border:1px solid rgba(123,247,207,.12);background:rgba(255,255,255,.025);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);transition:border-color .25s,transform .25s,box-shadow .25s;">
+        <span aria-hidden="true" style="display:inline-flex;width:40px;height:40px;align-items:center;justify-content:center;border-radius:11px;background:rgba(55,230,171,.1);margin-bottom:16px;filter:drop-shadow(0 0 5px rgba(55,230,171,.4));"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 4 V20" stroke="#37e6ab" stroke-width="2.7" stroke-linecap="round"/><path d="M6 12 L10 16 L19 5" stroke="#37e6ab" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <h3 style="font-family:'Lora',serif;font-weight:600;font-size:21px;margin:0 0 8px;color:#f2f8f5;">AI / Data</h3>
+        <p style="font-size:14.5px;line-height:1.6;color:#b7c9c2;margin:0;">Models, pipelines, and data you can actually trust in production.</p>
+      </div>
+
+      <div class="hov-card" style="padding:26px;border-radius:16px;border:1px solid rgba(123,247,207,.12);background:rgba(255,255,255,.025);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);transition:border-color .25s,transform .25s,box-shadow .25s;">
+        <span aria-hidden="true" style="display:inline-flex;width:40px;height:40px;align-items:center;justify-content:center;border-radius:11px;background:rgba(55,230,171,.1);margin-bottom:16px;filter:drop-shadow(0 0 5px rgba(55,230,171,.4));"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 4 V20" stroke="#37e6ab" stroke-width="2.7" stroke-linecap="round"/><path d="M6 12 L10 16 L19 5" stroke="#37e6ab" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <h3 style="font-family:'Lora',serif;font-weight:600;font-size:21px;margin:0 0 8px;color:#f2f8f5;">Security</h3>
+        <p style="font-size:14.5px;line-height:1.6;color:#b7c9c2;margin:0;">Find the unlocked doors before someone less friendly does.</p>
+      </div>
+
+      <div class="hov-card" style="padding:26px;border-radius:16px;border:1px solid rgba(123,247,207,.12);background:rgba(255,255,255,.025);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);transition:border-color .25s,transform .25s,box-shadow .25s;">
+        <span aria-hidden="true" style="display:inline-flex;width:40px;height:40px;align-items:center;justify-content:center;border-radius:11px;background:rgba(55,230,171,.1);margin-bottom:16px;filter:drop-shadow(0 0 5px rgba(55,230,171,.4));"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 4 V20" stroke="#37e6ab" stroke-width="2.7" stroke-linecap="round"/><path d="M6 12 L10 16 L19 5" stroke="#37e6ab" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <h3 style="font-family:'Lora',serif;font-weight:600;font-size:21px;margin:0 0 8px;color:#f2f8f5;">Design / UX</h3>
+        <p style="font-size:14.5px;line-height:1.6;color:#b7c9c2;margin:0;">Flows that feel obvious, and accessible to everyone who shows up.</p>
+      </div>
+
+      <div class="hov-card" style="padding:26px;border-radius:16px;border:1px solid rgba(123,247,207,.12);background:rgba(255,255,255,.025);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);transition:border-color .25s,transform .25s,box-shadow .25s;">
+        <span aria-hidden="true" style="display:inline-flex;width:40px;height:40px;align-items:center;justify-content:center;border-radius:11px;background:rgba(55,230,171,.1);margin-bottom:16px;filter:drop-shadow(0 0 5px rgba(55,230,171,.4));"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 4 V20" stroke="#37e6ab" stroke-width="2.7" stroke-linecap="round"/><path d="M6 12 L10 16 L19 5" stroke="#37e6ab" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <h3 style="font-family:'Lora',serif;font-weight:600;font-size:21px;margin:0 0 8px;color:#f2f8f5;">DevOps</h3>
+        <p style="font-size:14.5px;line-height:1.6;color:#b7c9c2;margin:0;">Ship reliably, observe everything, and sleep through the night.</p>
+      </div>
+
+      <!-- Triage card -->
+      <div class="hov-card" style="padding:26px;border-radius:16px;border:1px dashed rgba(55,230,171,.4);background:linear-gradient(140deg,rgba(55,230,171,.07),rgba(55,230,171,.01));display:flex;flex-direction:column;justify-content:center;transition:border-color .25s,transform .25s;">
+        <h3 style="font-family:'Lora',serif;font-weight:600;font-size:21px;margin:0 0 8px;color:#9af0cf;">Not sure? Get triaged.</h3>
+        <p style="font-size:14.5px;line-height:1.6;color:#c2d3cc;margin:0 0 16px;">Tell us the symptoms. We'll route you to the right specialist.</p>
+        <a href="#request-form" style="align-self:flex-start;font-size:14px;font-weight:600;color:#37e6ab;border-bottom:1px solid rgba(55,230,171,.4);padding-bottom:2px;transition:border-color .15s;">Start triage →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- BENCH / SPECIALISTS -->
+  <section id="bench" data-reveal style="max-width:1100px;margin:0 auto;padding:64px 24px 24px;">
+    <span class="label">The bench</span>
+    <h2 style="max-width:20ch;">Board-certified, by reputation.</h2>
+
+    <!-- Filter chips -->
+    <div id="filter-bar" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:30px;" role="group" aria-label="Filter specialists by department"></div>
+
+    <div id="bench-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:18px;"></div>
+  </section>
+
+  <!-- SAMPLE DIAGNOSIS -->
+  <section data-reveal style="max-width:1000px;margin:0 auto;padding:64px 24px 24px;">
+    <span class="label">What you receive</span>
+    <h2 style="max-width:20ch;">A plain-language <span style="font-style:italic;color:#37e6ab;">diagnosis.</span></h2>
+    <p style="font-size:16px;line-height:1.68;color:#c2d3cc;margin:0 0 36px;">Not a list of vague suggestions. A senior's verdict: what's critical, what can wait, and the order to fix it in.</p>
+
+    <div style="border-radius:16px;border:1px solid rgba(123,247,207,.14);background:rgba(255,255,255,.025);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);overflow:hidden;">
+      <div style="padding:20px 28px;border-bottom:1px solid rgba(123,247,207,.1);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+        <div>
+          <p style="font-family:'Lora',serif;font-size:16px;color:#f2f8f5;margin:0;">Diagnosis — AuthFlow SaaS · Security &amp; Backend Review</p>
+          <p style="font-size:12px;color:#7e928b;font-family:'Courier New',monospace;margin-top:4px;">Reviewed by Dan K. · 2.5 days turnaround</p>
+        </div>
+        <span style="font-size:12px;font-weight:500;color:#a9bcb4;padding:4px 10px;border-radius:999px;border:1px solid rgba(123,247,207,.16);background:rgba(255,255,255,.02);">3 findings</span>
+      </div>
+
+      <div style="padding:28px;display:flex;flex-direction:column;gap:20px;">
+        <div style="display:flex;gap:16px;align-items:flex-start;padding-bottom:20px;border-bottom:1px solid rgba(123,247,207,.08);">
+          <span style="flex:none;font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;padding:5px 10px;border-radius:7px;min-width:74px;text-align:center;color:#ff8f8f;background:rgba(255,90,90,.12);border:1px solid rgba(255,90,90,.4);margin-top:1px;">CRITICAL</span>
+          <div>
+            <p style="font-size:14.5px;font-weight:600;color:#f2f8f5;margin:0 0 5px;">JWT secret hardcoded in source — exposed in repo history</p>
+            <p style="font-size:13.5px;line-height:1.55;color:#c2d3cc;margin:0;">Rotate this immediately, even before fixing the code. Anyone with repo access can forge authentication tokens for any user.</p>
+            <code style="display:block;font-family:'Courier New',monospace;font-size:12px;color:#37e6ab;opacity:.8;margin-top:6px;">src/lib/auth.ts:14 — move to environment variable, rotate immediately</code>
+          </div>
+        </div>
+        <div style="display:flex;gap:16px;align-items:flex-start;padding-bottom:20px;border-bottom:1px solid rgba(123,247,207,.08);">
+          <span style="flex:none;font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;padding:5px 10px;border-radius:7px;min-width:74px;text-align:center;color:#ffc06b;background:rgba(255,170,70,.12);border:1px solid rgba(255,170,70,.38);margin-top:1px;">HIGH</span>
+          <div>
+            <p style="font-size:14.5px;font-weight:600;color:#f2f8f5;margin:0 0 5px;">No row-level authorisation on /api/users/:id — IDOR</p>
+            <p style="font-size:13.5px;line-height:1.55;color:#c2d3cc;margin:0;">Any logged-in user can read any other user's data by iterating numeric IDs. Validates auth but not ownership.</p>
+            <code style="display:block;font-family:'Courier New',monospace;font-size:12px;color:#37e6ab;opacity:.8;margin-top:6px;">src/api/users/[id].ts:38 — add: if (session.userId !== params.id) return 403</code>
+          </div>
+        </div>
+        <div style="display:flex;gap:16px;align-items:flex-start;">
+          <span style="flex:none;font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;padding:5px 10px;border-radius:7px;min-width:74px;text-align:center;color:#9fb3ab;background:rgba(159,179,171,.1);border:1px solid rgba(159,179,171,.3);margin-top:1px;">MEDIUM</span>
+          <div>
+            <p style="font-size:14.5px;font-weight:600;color:#f2f8f5;margin:0 0 5px;">No rate limiting on auth endpoints — brute-force is wide open</p>
+            <p style="font-size:13.5px;line-height:1.55;color:#c2d3cc;margin:0;">POST /api/login and /api/auth/reset have no throttling. A 6-digit OTP brute-force would succeed in under a minute.</p>
+            <code style="display:block;font-family:'Courier New',monospace;font-size:12px;color:#37e6ab;opacity:.8;margin-top:6px;">consider: upstash/ratelimit or express-rate-limit on auth routes</code>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:rgba(55,230,171,.04);border-top:1px solid rgba(123,247,207,.08);padding:22px 28px;display:flex;gap:14px;align-items:flex-start;">
+        <span aria-hidden="true" style="width:36px;height:36px;border-radius:50%;flex-shrink:0;background:rgba(55,230,171,.1);border:1px solid rgba(55,230,171,.25);display:inline-flex;align-items:center;justify-content:center;font-family:'Lora',serif;font-size:14px;font-weight:600;color:#9af0cf;">DK</span>
+        <div>
+          <p style="font-size:14px;color:#c2d3cc;font-style:italic;line-height:1.6;">"Two ship-blockers. Fix the hardcoded secret and the IDOR today — they're not optional. The rate limiting matters but can follow in the next sprint. This app has good bones; just patch the holes."</p>
+          <span style="display:block;font-style:normal;font-weight:600;color:#f2f8f5;font-size:13px;margin-top:6px;">— Dan Kowalski, Application Security · 13 yrs</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- THE EXCHANGE -->
+  <section id="join" data-reveal style="max-width:1000px;margin:0 auto;padding:64px 24px 24px;">
+    <span class="label">The exchange</span>
+    <h2 style="max-width:20ch;">Both sides walk away better.</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;">
+      <div style="padding:30px;border-radius:16px;border:1px solid rgba(123,247,207,.14);background:rgba(255,255,255,.025);">
+        <h3 style="font-family:'Lora',serif;font-weight:600;font-size:22px;margin:0 0 18px;color:#f2f8f5;">What you get</h3>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div style="display:flex;align-items:flex-start;gap:11px;"><span aria-hidden="true" style="flex:none;margin-top:1px;display:inline-flex;filter:drop-shadow(0 0 4px rgba(55,230,171,.45));"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 4 V20" stroke="#37e6ab" stroke-width="2.7" stroke-linecap="round"/><path d="M6 12 L10 16 L19 5" stroke="#37e6ab" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span style="font-size:15px;line-height:1.55;color:#c8d8d1;">An honest verdict from someone who has shipped this kind of thing before.</span></div>
+          <div style="display:flex;align-items:flex-start;gap:11px;"><span aria-hidden="true" style="flex:none;margin-top:1px;display:inline-flex;filter:drop-shadow(0 0 4px rgba(55,230,171,.45));"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 4 V20" stroke="#37e6ab" stroke-width="2.7" stroke-linecap="round"/><path d="M6 12 L10 16 L19 5" stroke="#37e6ab" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span style="font-size:15px;line-height:1.55;color:#c8d8d1;">A short, prioritized list of what to fix first — and what can wait.</span></div>
+          <div style="display:flex;align-items:flex-start;gap:11px;"><span aria-hidden="true" style="flex:none;margin-top:1px;display:inline-flex;filter:drop-shadow(0 0 4px rgba(55,230,171,.45));"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 4 V20" stroke="#37e6ab" stroke-width="2.7" stroke-linecap="round"/><path d="M6 12 L10 16 L19 5" stroke="#37e6ab" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span style="font-size:15px;line-height:1.55;color:#c8d8d1;">Plain-language reasoning, so you actually learn, not just patch.</span></div>
+          <div style="display:flex;align-items:flex-start;gap:11px;"><span aria-hidden="true" style="flex:none;margin-top:1px;display:inline-flex;filter:drop-shadow(0 0 4px rgba(55,230,171,.45));"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 4 V20" stroke="#37e6ab" stroke-width="2.7" stroke-linecap="round"/><path d="M6 12 L10 16 L19 5" stroke="#37e6ab" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span style="font-size:15px;line-height:1.55;color:#c8d8d1;">A second opinion before launch, instead of an incident after it.</span></div>
+        </div>
+      </div>
+      <div style="padding:30px;border-radius:16px;border:1px solid rgba(123,247,207,.14);background:rgba(255,255,255,.025);">
+        <h3 style="font-family:'Lora',serif;font-weight:600;font-size:22px;margin:0 0 18px;color:#f2f8f5;">What they get</h3>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div style="display:flex;align-items:flex-start;gap:11px;"><span aria-hidden="true" style="flex:none;margin-top:1px;display:inline-flex;filter:drop-shadow(0 0 4px rgba(55,230,171,.45));"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 4 V20" stroke="#37e6ab" stroke-width="2.7" stroke-linecap="round"/><path d="M6 12 L10 16 L19 5" stroke="#37e6ab" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span style="font-size:15px;line-height:1.55;color:#c8d8d1;">A LinkedIn shoutout or endorsement, and a growing reputation in the community.</span></div>
+          <div style="display:flex;align-items:flex-start;gap:11px;"><span aria-hidden="true" style="flex:none;margin-top:1px;display:inline-flex;filter:drop-shadow(0 0 4px rgba(55,230,171,.45));"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 4 V20" stroke="#37e6ab" stroke-width="2.7" stroke-linecap="round"/><path d="M6 12 L10 16 L19 5" stroke="#37e6ab" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span style="font-size:15px;line-height:1.55;color:#c8d8d1;">A low-commitment, satisfying way to give back to newer builders.</span></div>
+          <div style="display:flex;align-items:flex-start;gap:11px;"><span aria-hidden="true" style="flex:none;margin-top:1px;display:inline-flex;filter:drop-shadow(0 0 4px rgba(55,230,171,.45));"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 4 V20" stroke="#37e6ab" stroke-width="2.7" stroke-linecap="round"/><path d="M6 12 L10 16 L19 5" stroke="#37e6ab" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span style="font-size:15px;line-height:1.55;color:#c8d8d1;">The quiet pleasure of saving someone from a 2am production incident.</span></div>
+          <div style="display:flex;align-items:flex-start;gap:11px;"><span aria-hidden="true" style="flex:none;margin-top:1px;display:inline-flex;filter:drop-shadow(0 0 4px rgba(55,230,171,.45));"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 4 V20" stroke="#37e6ab" stroke-width="2.7" stroke-linecap="round"/><path d="M6 12 L10 16 L19 5" stroke="#37e6ab" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span style="font-size:15px;line-height:1.55;color:#c8d8d1;">A bench of peers worth knowing — no invoices, no client management.</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- REQUEST FORM -->
+  <section id="request-form" data-reveal style="max-width:640px;margin:0 auto;padding:64px 24px 80px;">
+    <span class="label">Get started</span>
+    <h2>Request a <span style="font-style:italic;color:#37e6ab;">diagnosis.</span></h2>
+    <p style="font-size:16px;line-height:1.68;color:#c2d3cc;margin:0 0 36px;">Describe your app below. We'll read it, match you to the right specialist, and follow up by email — usually within a day.</p>
+
+    <form id="dx-form" novalidate style="display:flex;flex-direction:column;gap:18px;">
+      <div>
+        <label for="f-name" style="display:block;font-size:13px;font-weight:600;color:#93a8a2;margin-bottom:6px;">Your name</label>
         <input type="text" id="f-name" name="name" required autocomplete="name"
-          style="width:100%;background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--radius);padding:12px 16px;color:var(--ink);font-size:.92rem;font-family:var(--font-sans);outline:none;transition:border-color .15s"
-          onfocus="this.style.borderColor='var(--mint)'" onblur="this.style.borderColor='var(--border)'">
+          style="width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(123,247,207,.16);border-radius:10px;padding:12px 16px;color:#f2f8f5;font-size:15px;font-family:inherit;outline:none;transition:border-color .15s;"
+          onfocus="this.style.borderColor='rgba(55,230,171,.55)'" onblur="this.style.borderColor='rgba(123,247,207,.16)'">
       </div>
       <div>
-        <label for="f-email" style="font-size:.82rem;font-weight:600;color:var(--ink-mid);display:block;margin-bottom:6px">Email</label>
+        <label for="f-email" style="display:block;font-size:13px;font-weight:600;color:#93a8a2;margin-bottom:6px;">Email</label>
         <input type="email" id="f-email" name="email" required autocomplete="email"
-          style="width:100%;background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--radius);padding:12px 16px;color:var(--ink);font-size:.92rem;font-family:var(--font-sans);outline:none;transition:border-color .15s"
-          onfocus="this.style.borderColor='var(--mint)'" onblur="this.style.borderColor='var(--border)'">
+          style="width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(123,247,207,.16);border-radius:10px;padding:12px 16px;color:#f2f8f5;font-size:15px;font-family:inherit;outline:none;transition:border-color .15s;"
+          onfocus="this.style.borderColor='rgba(55,230,171,.55)'" onblur="this.style.borderColor='rgba(123,247,207,.16)'">
       </div>
       <div>
-        <label for="f-dept" style="font-size:.82rem;font-weight:600;color:var(--ink-mid);display:block;margin-bottom:6px">Specialty needed (if you know)</label>
+        <label for="f-dept" style="display:block;font-size:13px;font-weight:600;color:#93a8a2;margin-bottom:6px;">Specialty needed (if you know)</label>
         <select id="f-dept" name="specialty"
-          style="width:100%;background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--radius);padding:12px 16px;color:var(--ink);font-size:.92rem;font-family:var(--font-sans);outline:none;appearance:none;cursor:pointer">
+          style="width:100%;background:rgba(10,18,25,.9);border:1px solid rgba(123,247,207,.16);border-radius:10px;padding:12px 16px;color:#f2f8f5;font-size:15px;font-family:inherit;outline:none;cursor:pointer;appearance:none;">
           <option value="">Not sure — triage it</option>
           <option>Engineering</option>
           <option>AI / Data</option>
@@ -1225,133 +337,195 @@ footer {
         </select>
       </div>
       <div>
-        <label for="f-app" style="font-size:.82rem;font-weight:600;color:var(--ink-mid);display:block;margin-bottom:6px">Describe your app</label>
+        <label for="f-app" style="display:block;font-size:13px;font-weight:600;color:#93a8a2;margin-bottom:6px;">Describe your app</label>
         <textarea id="f-app" name="description" required rows="5"
           placeholder="What does it do, how was it built, what are you worried about? Drop a repo link if you have one."
-          style="width:100%;background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--radius);padding:12px 16px;color:var(--ink);font-size:.92rem;font-family:var(--font-sans);outline:none;resize:vertical;min-height:120px;transition:border-color .15s"
-          onfocus="this.style.borderColor='var(--mint)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+          style="width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(123,247,207,.16);border-radius:10px;padding:12px 16px;color:#f2f8f5;font-size:15px;font-family:inherit;outline:none;resize:vertical;min-height:120px;transition:border-color .15s;placeholder-color:#7e928b;"
+          onfocus="this.style.borderColor='rgba(55,230,171,.55)'" onblur="this.style.borderColor='rgba(123,247,207,.16)'"></textarea>
       </div>
-      <button type="submit" class="btn btn-primary" style="align-self:flex-start">Send for review</button>
-      <p id="form-success" hidden style="color:var(--mint);font-weight:500;font-size:.9rem">
-        Received. We'll be in touch within a day.
-      </p>
-      <p id="form-error" hidden style="color:#f87171;font-size:.87rem">
-        Something went wrong — please email us directly.
-      </p>
+      <button type="submit" class="hov-glow" style="align-self:flex-start;display:inline-flex;align-items:center;padding:14px 26px;border-radius:11px;background:#37e6ab;color:#042018;font-size:15px;font-weight:600;box-shadow:0 0 22px rgba(55,230,171,.35);transition:box-shadow .2s,transform .15s;">Send for review</button>
+      <p id="form-success" hidden style="color:#37e6ab;font-weight:500;font-size:14px;">Received. We'll be in touch within a day.</p>
+      <p id="form-error" hidden style="color:#ff8f8f;font-size:13px;">Something went wrong — please try again.</p>
     </form>
-  </div>
-</section>
+  </section>
 
-<!-- ─── FOOTER ───────────────────────────────────────────── -->
-<footer>
-  <div class="footer-inner">
-    <div class="footer-top">
-      <div>
-        <div class="footer-brand">
-          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
-            <use href="#cross-tick" color="var(--mint)"/>
-          </svg>
-          <span class="footer-brand-name">Codeside</span>
+  <!-- FOOTER -->
+  <footer style="margin-top:20px;border-top:1px solid rgba(123,247,207,.1);background:rgba(4,7,11,.6);">
+    <div style="max-width:1000px;margin:0 auto;padding:48px 24px 40px;">
+      <div style="display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:28px;margin-bottom:30px;">
+        <div style="max-width:34ch;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+            <span aria-hidden="true" style="display:inline-flex;filter:drop-shadow(0 0 5px rgba(55,230,171,.55));"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 4 V20" stroke="#37e6ab" stroke-width="2.7" stroke-linecap="round"/><path d="M6 12 L10 16 L19 5" stroke="#37e6ab" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span style="font-family:'Lora',serif;font-size:19px;font-weight:600;color:#f2f8f5;">Codeside</span>
+          </div>
+          <p style="font-family:'Lora',serif;font-style:italic;font-size:18px;color:#9af0cf;margin:0;">Healthcare for the AI-built web.</p>
         </div>
-        <p class="footer-tagline">Healthcare for the AI-built web.</p>
+        <nav style="display:flex;gap:50px;flex-wrap:wrap;" aria-label="Footer navigation">
+          <div style="display:flex;flex-direction:column;gap:11px;">
+            <a href="#departments" class="hov-link" style="color:#b7c9c2;font-size:14px;transition:color .15s;">Departments</a>
+            <a href="#bench" class="hov-link" style="color:#b7c9c2;font-size:14px;transition:color .15s;">The bench</a>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:11px;">
+            <a href="#request-form" class="hov-link" style="color:#b7c9c2;font-size:14px;transition:color .15s;">Request a diagnosis</a>
+            <a href="#join" class="hov-link" style="color:#b7c9c2;font-size:14px;transition:color .15s;">Join the community</a>
+          </div>
+        </nav>
       </div>
-      <nav class="footer-links" aria-label="Footer navigation">
-        <a href="#who">Who we are</a>
-        <a href="#depts">Specialties</a>
-        <a href="#bench">The bench</a>
-        <a href="#diagnosis-sample">What you receive</a>
-        <a href="#request-form">Request a diagnosis</a>
-        <a href="#who">Join us</a>
-      </nav>
+      <p style="font-size:12.5px;line-height:1.6;color:#7e928b;margin:0;max-width:72ch;border-top:1px solid rgba(123,247,207,.07);padding-top:22px;">Codeside is a community of volunteer engineers offering opinions in good faith. It is not a regulated medical service, an agency, or a guarantee of any outcome. The clinical language is a metaphor — reviews are professional opinions, not certifications. © 2026 Codeside.</p>
     </div>
-    <p class="footer-disclaimer">
-      Codeside is a community connecting builders with vetted senior engineers for peer review.
-      It is not a medical service, regulated advice provider, or professional services firm.
-      Reviews are informal opinions from experienced practitioners and do not constitute a warranty,
-      audit, or guarantee of any kind. Codeside accepts no liability for decisions made on the basis
-      of a community review. "Diagnosis" is used as a product metaphor only.
-    </p>
-  </div>
-</footer>
+  </footer>
+
+</div><!-- /main -->
 
 <script>
-(function () {
-  /* ── ECG animation setup ───────────────────────────────── */
-  var ecgReveal = document.getElementById('ecg-path-reveal');
-  if (ecgReveal && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    var len = ecgReveal.getTotalLength ? ecgReveal.getTotalLength() : 1600;
-    ecgReveal.style.strokeDasharray = len;
-    ecgReveal.style.strokeDashoffset = len;
-    ecgReveal.style.animation = 'ecg-sweep 6s linear infinite';
-    var style = document.createElement('style');
-    style.textContent = '@keyframes ecg-sweep{0%{stroke-dashoffset:' + len + '}100%{stroke-dashoffset:0}}';
-    document.head.appendChild(style);
-  } else if (ecgReveal) {
-    ecgReveal.style.strokeDasharray = 'none';
-    ecgReveal.style.strokeDashoffset = '0';
-  }
+(function(){
 
-  /* ── IntersectionObserver reveal ──────────────────────── */
-  if ('IntersectionObserver' in window) {
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (e) {
-        if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
-      });
-    }, { threshold: 0.12 });
-    document.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
-  } else {
-    document.querySelectorAll('.reveal').forEach(function (el) { el.classList.add('visible'); });
-  }
+/* ── Specialists data ─────────────────────────────────── */
+var SPECS = [
+  { name:'Chinmay Patil', initials:'CP', dept:'Engineering',
+    bio:'Builds across the full stack with a particular eye for the glue AI gets wrong — the integration layer, the data model that won\'t survive a migration, and RAG patterns that quietly hallucinate under load.',
+    tags:['Frontend','Backend','APIs','RAG / Retrieval','LLM Integration'],
+    linkedin:'https://www.linkedin.com/in/chinmay-patil-/' },
+  { name:'Priya Mehta', initials:'PM', dept:'Engineering',
+    bio:'A decade building payment APIs processing over $2B annually. Knows exactly which database design mistakes quietly become catastrophic and which API patterns collapse under real traffic.',
+    tags:['Backend','APIs','System Design','PostgreSQL','Node.js'] },
+  { name:'Marcus Delgado', initials:'MD', dept:'AI / Data',
+    bio:'Built semantic search for 2M documents/week and led RAG system design at an a16z-funded AI startup. Routinely spots retrieval hallucination and LLM integration patterns that quietly leak PII.',
+    tags:['LLMs','RAG','Vector DBs','Python','Agents'] },
+  { name:'Aisha Okonkwo', initials:'AO', dept:'AI / Data',
+    bio:'Built ML training and inference infrastructure from prototype to production, managing pipelines that served 40M daily predictions. Reviews AI-generated data engineering for things that only hurt at scale.',
+    tags:['ML Pipelines','Data Engineering','Python','Airflow','LangChain'] },
+  { name:'Dan Kowalski', initials:'DK', dept:'Security',
+    bio:'Ran AppSec at a payment processor — found and disclosed three critical IDOR vulnerabilities before a public audit. Has seen every class of vulnerability Cursor and Copilot tend to introduce.',
+    tags:['AppSec','Pen Testing','Auth / Identity','OWASP','Node.js'] },
+  { name:'Femi Adeyemi', initials:'FA', dept:'Security',
+    bio:'Led cloud security at a Series C healthtech through SOC 2 Type II. Specialises in IAM misconfigurations, overly-wide storage permissions, and hardcoded secrets that AI tools consistently produce.',
+    tags:['Cloud Security','IAM','AWS','Terraform','SOC 2'] },
+  { name:'Sara Lindqvist', initials:'SL', dept:'Design / UX',
+    bio:'Led product design at two B2B SaaS companies, founding designer at a YC-backed workflow tool. Reviews AI-generated interfaces for flow coherence, information hierarchy, and patronising LLM copy.',
+    tags:['Product Design','Figma','UX Research','Design Systems','Accessibility'] },
+  { name:'Tomás Reyes', initials:'TR', dept:'Design / UX',
+    bio:'Ran usability research at a fintech app with 4M active users. Reviews AI-built interfaces for the failures that only show up when real users touch the product — confusing errors, broken flows, accessibility gaps.',
+    tags:['UX Research','Usability Testing','Accessibility','Mobile UX','B2C'] },
+  { name:'Yuki Tanaka', initials:'YT', dept:'DevOps',
+    bio:'Built CI/CD platform and Kubernetes infrastructure at a Series C healthtech, reducing deploy times from 45 minutes to 8. Reviews AI-generated infra for missing readiness probes, hardcoded secrets, and wide IAM policies.',
+    tags:['Kubernetes','CI/CD','Terraform','AWS','GitHub Actions'] },
+  { name:'Oleksiy Koval', initials:'OK', dept:'DevOps',
+    bio:'Built and maintained cloud infra for a multi-tenant SaaS across three regions. Specialises in the gap between "deploys once" and "deploys reliably" — environment parity, secrets management, alerting.',
+    tags:['Docker','Cloud Setup','GitHub Actions','GCP','Observability'] },
+];
 
-  /* ── Specialist filter ─────────────────────────────────── */
-  window.filterBench = function (btn, dept) {
-    document.querySelectorAll('.filter-btn').forEach(function (b) { b.classList.remove('active'); });
-    btn.classList.add('active');
-    var cards = document.querySelectorAll('#bench-grid .spec-card');
-    var shown = 0;
-    cards.forEach(function (c) {
-      var depts = (c.dataset.dept || '').split(' ');
-      var match = dept === 'all' || depts.indexOf(dept) !== -1;
-      if (match) { c.removeAttribute('hidden'); shown++; } else { c.setAttribute('hidden', ''); }
+/* ── Build filter chips ───────────────────────────────── */
+var DEPTS = ['All','Engineering','AI / Data','Security','Design / UX','DevOps'];
+var activeFilter = 'All';
+var chipBase = 'cursor:pointer;font-family:inherit;font-size:14px;font-weight:500;padding:9px 17px;border-radius:999px;transition:all .2s;';
+var filterBar = document.getElementById('filter-bar');
+
+function renderChips(){
+  filterBar.innerHTML = '';
+  DEPTS.forEach(function(d){
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = d;
+    btn.setAttribute('aria-pressed', d === activeFilter ? 'true' : 'false');
+    if(d === activeFilter){
+      btn.style.cssText = chipBase + 'background:#37e6ab;color:#042018;border:1px solid #37e6ab;box-shadow:0 0 18px rgba(55,230,171,.35);';
+    } else {
+      btn.style.cssText = chipBase + 'background:rgba(255,255,255,.03);color:#c2d3cc;border:1px solid rgba(123,247,207,.16);';
+    }
+    btn.addEventListener('click', function(){ activeFilter = d; renderChips(); renderCards(); });
+    filterBar.appendChild(btn);
+  });
+}
+
+/* ── Build specialist cards ───────────────────────────── */
+var grid = document.getElementById('bench-grid');
+
+function renderCards(){
+  var shown = SPECS.filter(function(s){ return activeFilter === 'All' || s.dept === activeFilter; });
+  grid.innerHTML = '';
+  shown.forEach(function(s, i){
+    var card = document.createElement('article');
+    card.style.cssText = 'padding:24px;border-radius:16px;border:1px solid rgba(123,247,207,.13);background:rgba(255,255,255,.025);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);animation:cdReveal .55s ease both;animation-delay:' + (i*55) + 'ms;transition:border-color .25s,transform .25s,box-shadow .25s;';
+    card.classList.add('hov-card');
+
+    var linkOpen = s.linkedin ? '<a href="' + s.linkedin + '" target="_blank" rel="noopener noreferrer" style="text-decoration:none;display:contents;">' : '';
+    var linkClose = s.linkedin ? '</a>' : '';
+
+    card.innerHTML =
+      '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px;">' +
+        '<div style="display:flex;align-items:center;gap:13px;">' +
+          '<span aria-hidden="true" style="display:inline-flex;width:46px;height:46px;border-radius:50%;align-items:center;justify-content:center;background:rgba(55,230,171,.1);border:1px solid rgba(55,230,171,.25);font-family:\'Lora\',serif;font-size:18px;font-weight:600;color:#9af0cf;flex-shrink:0;">' + esc(s.initials) + '</span>' +
+          '<div>' +
+            '<p style="font-size:16.5px;font-weight:600;color:#f2f8f5;margin:0;line-height:1.2;">' + esc(s.name) + '</p>' +
+            '<p style="font-size:13px;color:#37e6ab;margin:3px 0 0;font-weight:500;">' + esc(s.dept) + '</p>' +
+          '</div>' +
+        '</div>' +
+        '<span title="Board-certified by the community" style="flex:none;display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;background:rgba(55,230,171,.12);border:1px solid rgba(55,230,171,.35);filter:drop-shadow(0 0 6px rgba(55,230,171,.4));" aria-label="Board-certified">' +
+          '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 4 V20" stroke="#37e6ab" stroke-width="2.8" stroke-linecap="round"/><path d="M6 12 L10 16 L19 5" stroke="#37e6ab" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+        '</span>' +
+      '</div>' +
+      '<p style="font-size:14.5px;line-height:1.58;color:#c2d3cc;margin:0 0 16px;">' + esc(s.bio) + '</p>' +
+      '<div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px;">' +
+        s.tags.map(function(t){ return '<span style="font-size:12px;font-weight:500;color:#a9bcb4;padding:4px 10px;border-radius:999px;border:1px solid rgba(123,247,207,.16);background:rgba(255,255,255,.02);">' + esc(t) + '</span>'; }).join('') +
+      '</div>' +
+      '<div style="display:flex;align-items:center;gap:8px;padding-top:14px;border-top:1px solid rgba(123,247,207,.08);">' +
+        '<span class="cd-pulse-dot" aria-hidden="true" style="width:7px;height:7px;border-radius:50%;background:#37e6ab;animation:cdPulse 2.4s ease-in-out infinite;flex-shrink:0;"></span>' +
+        '<span style="font-size:13px;color:#9fb3ab;font-weight:500;">Works for a LinkedIn shoutout</span>' +
+      '</div>';
+
+    grid.appendChild(card);
+  });
+}
+
+function esc(str){ return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+renderChips();
+renderCards();
+
+/* ── IntersectionObserver reveal ──────────────────────── */
+if('IntersectionObserver' in window){
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){
+        e.target.style.animation = 'cdReveal .8s ease both';
+        e.target.style.opacity = '1';
+        e.target.style.transform = 'translateY(0)';
+        io.unobserve(e.target);
+      }
     });
-    var label = dept === 'all' ? 'Showing all ' + shown + ' specialists'
-      : 'Showing ' + shown + ' specialist' + (shown !== 1 ? 's' : '') + ' in ' + btn.textContent.trim();
-    document.getElementById('bench-count').textContent = label;
-  };
+  },{threshold:.1});
+  document.querySelectorAll('[data-reveal]').forEach(function(el){
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(22px)';
+    io.observe(el);
+  });
+}
 
-  /* ── Form submission (Formspree-ready, no backend needed) ─ */
-  var form = document.getElementById('dx-form');
-  if (form) {
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
-      var btn = form.querySelector('button[type=submit]');
-      btn.disabled = true; btn.textContent = 'Sending…';
-      // Replace action URL with your Formspree endpoint:
-      fetch('https://formspree.io/f/mvznlnjl', {
-        method: 'POST',
-        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name:        form.querySelector('[name=name]').value,
-          email:       form.querySelector('[name=email]').value,
-          specialty:   form.querySelector('[name=specialty]').value,
-          description: form.querySelector('[name=description]').value,
-          _subject:    'Codeside — diagnosis request'
-        })
+/* ── Form submission ──────────────────────────────────── */
+var form = document.getElementById('dx-form');
+if(form){
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    var btn = form.querySelector('button[type=submit]');
+    btn.disabled = true; btn.textContent = 'Sending…';
+    fetch('https://formspree.io/f/mvznlnjl',{
+      method:'POST',
+      headers:{'Accept':'application/json','Content-Type':'application/json'},
+      body:JSON.stringify({
+        name:        form.querySelector('[name=name]').value,
+        email:       form.querySelector('[name=email]').value,
+        specialty:   form.querySelector('[name=specialty]').value,
+        description: form.querySelector('[name=description]').value,
+        _subject:    'Codeside — diagnosis request'
       })
-      .then(function (r) {
-        if (r.ok) {
-          document.getElementById('form-success').removeAttribute('hidden');
-          form.reset();
-        } else { throw new Error('non-ok'); }
-      })
-      .catch(function () {
-        document.getElementById('form-error').removeAttribute('hidden');
-      })
-      .finally(function () {
-        btn.disabled = false; btn.textContent = 'Send for review';
-      });
-    });
-  }
+    })
+    .then(function(r){ if(r.ok){ document.getElementById('form-success').removeAttribute('hidden'); form.reset(); } else { throw new Error(); } })
+    .catch(function(){ document.getElementById('form-error').removeAttribute('hidden'); })
+    .finally(function(){ btn.disabled = false; btn.textContent = 'Send for review'; });
+  });
+}
+
 })();
 </script>
 </body>
