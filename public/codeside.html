@@ -582,6 +582,86 @@ if(form){
 }
 
 })();
+
+/* ── Parallax ─────────────────────────────────────────── */
+(function(){
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  // ── Phase 1: assign IDs to DOM elements ──────────────
+  var heroSec = document.getElementById('hero-h1') && document.getElementById('hero-h1').closest('section');
+  if(heroSec){
+    var ecgDiv = heroSec.querySelector('[style*="100vw"]');
+    if(ecgDiv && !ecgDiv.id) ecgDiv.id = 'hero-ecg';
+    var heroPara = heroSec.querySelector('p');
+    if(heroPara && !heroPara.id) heroPara.id = 'hero-sub';
+    var ctaRow = heroSec.querySelector('div[style*="gap:14px"][style*="margin-bottom:34px"]');
+    if(ctaRow && !ctaRow.id) ctaRow.id = 'hero-ctas';
+    var proofsRow = heroSec.querySelector('div[style*="gap:14px 30px"]');
+    if(proofsRow && !proofsRow.id) proofsRow.id = 'hero-proofs';
+  }
+
+  var bgGlow = document.querySelector('[style*="radial-gradient(ellipse 60%"]');
+  if(bgGlow && !bgGlow.id) bgGlow.id = 'bg-glow';
+
+  var cases = document.querySelectorAll('[style*="255,90,90,.04"]');
+  if(cases[0] && !cases[0].id) cases[0].id = 'case-1';
+  if(cases[1] && !cases[1].id) cases[1].id = 'case-2';
+
+  var statNums = document.querySelectorAll('[style*="font-size:42px"]');
+  statNums.forEach(function(s, i){
+    var card = s.parentElement;
+    if(card && !card.id) card.id = 'stat-' + (i + 1);
+  });
+
+  // ── Phase 2: define layers (resolved now that IDs exist) ─
+  // speed: fraction of scroll-from-center offset applied as translateY
+  // prefix: any existing transform to preserve (e.g. translateX(-50%))
+  var layers = [
+    { id:'hero-h1',     speed:-0.14, clamp:100, prefix:'' },
+    { id:'hero-ecg',    speed:-0.22, clamp:130, prefix:'translateX(-50%) ' },
+    { id:'hero-sub',    speed:-0.09, clamp:60,  prefix:'' },
+    { id:'hero-ctas',   speed:-0.07, clamp:44,  prefix:'' },
+    { id:'hero-proofs', speed:-0.05, clamp:30,  prefix:'' },
+    { id:'bg-glow',     speed: 0.05, clamp:36,  prefix:'' },
+    { id:'case-1',      speed:-0.04, clamp:24,  prefix:'' },
+    { id:'case-2',      speed:-0.07, clamp:24,  prefix:'' },
+    { id:'stat-1',      speed:-0.03, clamp:18,  prefix:'' },
+    { id:'stat-2',      speed:-0.05, clamp:18,  prefix:'' },
+    { id:'stat-3',      speed:-0.07, clamp:18,  prefix:'' },
+  ];
+
+  var resolved = layers.map(function(l){
+    var el = document.getElementById(l.id);
+    if(!el) return null;
+    el.style.willChange = 'transform';
+    return { el:el, speed:l.speed, clamp:l.clamp, prefix:l.prefix };
+  }).filter(Boolean);
+
+  // ── Phase 3: rAF loop ─────────────────────────────────
+  var lastY = -1, raf;
+
+  function tick(){
+    var y = window.scrollY;
+    if(y !== lastY){
+      lastY = y;
+      var vh = window.innerHeight;
+      resolved.forEach(function(r){
+        var rect = r.el.getBoundingClientRect();
+        var elCenter = y + rect.top + rect.height * 0.5;
+        var raw = (y - elCenter + vh * 0.5) * r.speed;
+        var off = Math.max(-r.clamp, Math.min(r.clamp, raw));
+        r.el.style.transform = r.prefix + 'translateY(' + off.toFixed(2) + 'px)';
+      });
+    }
+    raf = requestAnimationFrame(tick);
+  }
+
+  raf = requestAnimationFrame(tick);
+  document.addEventListener('visibilitychange', function(){
+    if(document.hidden) cancelAnimationFrame(raf);
+    else raf = requestAnimationFrame(tick);
+  });
+})();
 </script>
 </body>
 </html>
