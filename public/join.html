@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Join the Bench — CodeSage</title>
+<meta name="description" content="A side project for seasoned engineers — review AI-built apps on your own time, help people ship safely, and earn a public shoutout.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:#04070b;min-height:100vh;}
+::selection{background:rgba(55,230,171,.28);color:#eafff6;}
+
+@keyframes jnPulse{0%,100%{opacity:1;transform:scale(1);box-shadow:0 0 0 0 rgba(55,230,171,.5);}50%{opacity:.55;transform:scale(.82);box-shadow:0 0 0 6px rgba(55,230,171,0);}}
+@keyframes jnBlip{from{offset-distance:0%;}to{offset-distance:100%;}}
+@keyframes jnGlow{0%,100%{opacity:.85;}50%{opacity:1;}}
+@keyframes popIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+#jn-blip{
+  offset-path:path('M0,70 H600 C622,70 626,57 638,57 C650,57 654,70 676,70 H716 L731,70 L739,84 L750,16 L761,120 L772,52 L781,70 H822 C852,70 868,50 890,50 C912,50 928,70 958,70 H1600');
+  offset-rotate:0deg;
+  animation:jnBlip 5.5s linear infinite;
+}
+
+body{font-family:'Inter',system-ui,sans-serif;color:#e8f1ec;-webkit-font-smoothing:antialiased;}
+
+.bg-grid{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(123,247,207,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(123,247,207,.04) 1px,transparent 1px);background-size:46px 46px;-webkit-mask-image:radial-gradient(ellipse 80% 70% at 50% 0%,#000 20%,transparent 78%);mask-image:radial-gradient(ellipse 80% 70% at 50% 0%,#000 20%,transparent 78%);}
+
+.jn-input{
+  width:100%;font-family:inherit;font-size:15px;color:#eef6f2;
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(123,247,207,.16);
+  border-radius:10px;padding:13px 15px;
+  outline:none;transition:border-color .2s,box-shadow .2s;
+}
+.jn-input:focus{border-color:rgba(55,230,171,.55);box-shadow:0 0 0 3px rgba(55,230,171,.08);}
+.jn-input::placeholder{color:#4a6660;}
+.jn-input.error{border-color:rgba(255,120,120,.6);}
+
+.chip-btn{
+  cursor:pointer;font-family:inherit;font-size:14px;font-weight:500;
+  padding:10px 16px;border-radius:999px;
+  transition:all .18s;
+  background:rgba(255,255,255,.03);color:#c2d3cc;
+  border:1px solid rgba(123,247,207,.16);
+}
+.chip-btn:hover{border-color:rgba(123,247,207,.4);color:#e8f1ec;}
+.chip-btn.active{background:#37e6ab;color:#042018;border-color:#37e6ab;box-shadow:0 0 18px rgba(55,230,171,.35);}
+.chip-btn:focus-visible{outline:2px solid #7bf7cf;outline-offset:2px;}
+
+.section-divider{display:flex;align-items:center;gap:10px;margin-bottom:4px;}
+.section-label{font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#8aa39a;white-space:nowrap;}
+.section-line{flex:1;height:1px;background:rgba(123,247,207,.1);}
+
+.submit-btn{
+  display:inline-flex;align-items:center;gap:9px;
+  padding:15px 28px;border-radius:11px;border:none;
+  cursor:pointer;font-family:inherit;
+  background:#37e6ab;color:#042018;
+  font-size:16px;font-weight:600;
+  box-shadow:0 0 26px rgba(55,230,171,.4);
+  transition:box-shadow .2s,transform .15s;
+}
+.submit-btn:hover{box-shadow:0 0 38px rgba(55,230,171,.65);transform:translateY(-1px);}
+.submit-btn:focus-visible{outline:2px solid #7bf7cf;outline-offset:3px;}
+
+#confirm-screen{display:none;}
+#confirm-screen.visible{display:block;}
+#form-screen.hidden{display:none;}
+
+/* Logo mark */
+.cs-logo-mark{display:inline-flex;filter:drop-shadow(0 0 5px rgba(55,230,171,.55));}
+
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important;}
+  #jn-blip{offset-distance:47%!important;}
+}
+</style>
+</head>
+<body>
+
+<div class="bg-grid" aria-hidden="true"></div>
+<div style="position:relative;z-index:1;">
+
+  <!-- NAV -->
+  <header style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 26px;border-bottom:1px solid rgba(123,247,207,.08);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);background:rgba(4,7,11,.6);position:sticky;top:0;z-index:20;">
+    <a href="index.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;">
+      <span class="cs-logo-mark" aria-hidden="true">
+        <svg width="22" height="27" viewBox="0 0 418 504" fill="none">
+          <rect x="249.095" width="504" height="38" rx="19" transform="rotate(90 249.095 0)" fill="#37e6ab"/>
+          <rect x="425.255" y="77.1607" width="504" height="38" rx="19" transform="rotate(132 425.255 77.1607)" fill="#37e6ab"/>
+          <path d="M88.0519 444.28C78.3225 448.211 67.2487 443.51 63.3178 433.781L1.38854 280.5C-2.54236 270.771 2.15818 259.697 11.8875 255.766C21.6168 251.835 32.6906 256.536 36.6215 266.265L98.5508 419.546C102.482 429.275 97.7812 440.349 88.0519 444.28Z" fill="#37e6ab"/>
+        </svg>
+      </span>
+      <span style="font-family:'Lora',serif;font-size:18px;font-weight:600;color:#f2f8f5;">CodeSage</span>
+      <span style="font-size:13px;color:#8aa39a;font-weight:500;border-left:1px solid rgba(123,247,207,.14);padding-left:11px;margin-left:3px;">Join the bench</span>
+    </a>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span aria-hidden="true" style="width:7px;height:7px;border-radius:50%;background:#37e6ab;animation:jnPulse 2.4s ease-in-out infinite;flex-shrink:0;"></span>
+      <span style="font-size:13px;color:#9fb3ab;font-weight:500;">Review on your own time</span>
+    </div>
+  </header>
+
+  <!-- FORM SCREEN -->
+  <main id="form-screen" style="max-width:720px;margin:0 auto;padding:44px 24px 90px;">
+
+    <p style="font-size:12px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:#37e6ab;margin:0 0 12px;">Join the community</p>
+    <h1 style="font-family:'Lora',serif;font-weight:600;font-size:clamp(30px,4.6vw,44px);line-height:1.1;letter-spacing:-.5px;margin:0 0 14px;color:#f4faf7;max-width:17ch;">Got the experience? Pass it on.</h1>
+    <p style="font-size:16px;line-height:1.6;color:#c2d3cc;margin:0 0 8px;max-width:58ch;">CodeSage is a bench of senior engineers who review what AI helped someone build — and tell them the truth, kindly. It's a side project: you pick the cases that fit, review on your own time, and you're credited with a public shoutout. No invoices, no client management.</p>
+
+    <!-- Mini ECG -->
+    <div aria-hidden="true" style="position:relative;width:100%;height:42px;margin:18px 0 30px;opacity:.9;">
+      <svg viewBox="0 0 1600 140" preserveAspectRatio="none" width="100%" height="100%" style="display:block;overflow:visible;">
+        <defs>
+          <linearGradient id="jn-ecg" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#37e6ab" stop-opacity="0"/>
+            <stop offset="0.12" stop-color="#37e6ab" stop-opacity="0.8"/>
+            <stop offset="0.88" stop-color="#7bf7cf" stop-opacity="0.8"/>
+            <stop offset="1" stop-color="#7bf7cf" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <path d="M0,70 H600 C622,70 626,57 638,57 C650,57 654,70 676,70 H716 L731,70 L739,84 L750,16 L761,120 L772,52 L781,70 H822 C852,70 868,50 890,50 C912,50 928,70 958,70 H1600"
+          fill="none" stroke="url(#jn-ecg)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"
+          style="filter:drop-shadow(0 0 5px rgba(55,230,171,.5));animation:jnGlow 3s ease-in-out infinite;"/>
+        <circle id="jn-blip" r="4" fill="#eafff6" vector-effect="non-scaling-stroke"
+          style="filter:drop-shadow(0 0 6px rgba(123,247,207,.9)) drop-shadow(0 0 12px rgba(55,230,171,.6));"/>
+      </svg>
+    </div>
+
+    <form id="jn-form" novalidate style="display:flex;flex-direction:column;gap:30px;">
+
+      <!-- 01 ABOUT YOU -->
+      <fieldset style="border:none;margin:0;padding:0;display:flex;flex-direction:column;gap:16px;">
+        <div class="section-divider">
+          <span class="section-label">01 · About you</span>
+          <span class="section-line"></span>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;">
+          <label style="display:flex;flex-direction:column;gap:7px;">
+            <span style="font-size:14px;font-weight:500;color:#d7e6e0;">Your name</span>
+            <input class="jn-input" type="text" id="f-name" name="name" placeholder="Jane Okafor" autocomplete="given-name">
+          </label>
+          <label style="display:flex;flex-direction:column;gap:7px;">
+            <span style="font-size:14px;font-weight:500;color:#d7e6e0;">Email <span id="email-hint" style="font-weight:400;color:#7e928b;">· how we reach you</span></span>
+            <input class="jn-input" type="email" id="f-email" name="email" placeholder="you@example.com" autocomplete="email" required>
+          </label>
+        </div>
+
+        <label style="display:flex;flex-direction:column;gap:7px;">
+          <span style="font-size:14px;font-weight:500;color:#d7e6e0;">Your LinkedIn <span id="li-hint" style="font-weight:400;color:#7e928b;">· required</span></span>
+          <input class="jn-input" type="text" id="f-linkedin" name="linkedin" placeholder="linkedin.com/in/…" style="font-family:'Inter',monospace;font-size:14px;" required>
+        </label>
+        <p style="font-size:13px;color:#7e928b;line-height:1.5;">This is how the community vouches for you — reputation here is public, and the shoutouts builders give point back to your profile.</p>
+      </fieldset>
+
+      <!-- 02 YOUR PRACTICE -->
+      <fieldset style="border:none;margin:0;padding:0;display:flex;flex-direction:column;gap:16px;">
+        <div class="section-divider">
+          <span class="section-label">02 · Your practice</span>
+          <span class="section-line"></span>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:9px;">
+          <span style="font-size:14px;font-weight:500;color:#d7e6e0;">Which departments can you cover? <span style="color:#7e928b;font-weight:400;">· pick all that fit</span></span>
+          <div id="dept-chips" style="display:flex;flex-wrap:wrap;gap:8px;" role="group" aria-label="Departments"></div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:9px;">
+          <span style="font-size:14px;font-weight:500;color:#d7e6e0;">Years of experience</span>
+          <div id="exp-chips" style="display:flex;flex-wrap:wrap;gap:8px;" role="group" aria-label="Experience"></div>
+        </div>
+
+        <label style="display:flex;flex-direction:column;gap:7px;">
+          <span style="font-size:14px;font-weight:500;color:#d7e6e0;">Where's your edge? <span style="color:#7e928b;font-weight:400;">· the things you'd catch that others miss</span></span>
+          <input class="jn-input" type="text" id="f-skills" name="skills" placeholder="e.g. Postgres at scale, auth, React performance, threat modeling">
+        </label>
+
+        <label style="display:flex;flex-direction:column;gap:7px;">
+          <span style="font-size:14px;font-weight:500;color:#d7e6e0;">Anything that shows your work? <span style="color:#7e928b;font-weight:400;">· optional — GitHub, a talk, a war story</span></span>
+          <textarea class="jn-input" id="f-proof" name="proof" rows="2"
+            placeholder="A link, or a line about something you shipped that you're proud of."
+            style="resize:vertical;line-height:1.55;"></textarea>
+        </label>
+      </fieldset>
+
+      <!-- 03 HOW YOU'D HELP -->
+      <fieldset style="border:none;margin:0;padding:0;display:flex;flex-direction:column;gap:16px;">
+        <div class="section-divider">
+          <span class="section-label">03 · How you'd help</span>
+          <span class="section-line"></span>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:9px;">
+          <span style="font-size:14px;font-weight:500;color:#d7e6e0;">Roughly how many hours can you give?</span>
+          <div id="cadence-chips" style="display:flex;flex-wrap:wrap;gap:8px;" role="group" aria-label="Cadence"></div>
+        </div>
+
+        <label style="display:flex;flex-direction:column;gap:7px;">
+          <span style="font-size:14px;font-weight:500;color:#d7e6e0;">Why do you want to do this? <span style="color:#7e928b;font-weight:400;">· optional</span></span>
+          <textarea class="jn-input" id="f-why" name="why" rows="2"
+            placeholder="No wrong answer — giving back, staying sharp, the puzzle of someone else's code."
+            style="resize:vertical;line-height:1.55;"></textarea>
+        </label>
+      </fieldset>
+
+      <!-- Hidden chip value fields -->
+      <input type="hidden" id="f-depts" name="departments">
+      <input type="hidden" id="f-experience" name="experience">
+      <input type="hidden" id="f-cadence" name="cadence">
+
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:16px;margin-top:6px;">
+        <button type="submit" class="submit-btn">Apply to the bench</button>
+        <span style="font-size:13px;color:#8aa39a;max-width:34ch;line-height:1.45;">We read every application by hand and reply personally — usually within a few days.</span>
+      </div>
+    </form>
+  </main>
+
+  <!-- CONFIRMATION SCREEN -->
+  <main id="confirm-screen" style="max-width:620px;margin:0 auto;padding:80px 24px;text-align:center;">
+    <span aria-hidden="true" style="display:inline-flex;width:74px;height:74px;border-radius:50%;align-items:center;justify-content:center;background:rgba(55,230,171,.1);border:1px solid rgba(55,230,171,.35);margin-bottom:26px;filter:drop-shadow(0 0 16px rgba(55,230,171,.4));">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+        <path d="M12 4 V20" stroke="#37e6ab" stroke-width="2.6" stroke-linecap="round"/>
+        <path d="M6 12 L10 16 L19 5" stroke="#37e6ab" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </span>
+    <h1 style="font-family:'Lora',serif;font-weight:600;font-size:clamp(28px,4.4vw,40px);line-height:1.12;letter-spacing:-.4px;margin:0 0 16px;color:#f4faf7;">Application received.</h1>
+    <p id="confirm-line" style="font-size:16.5px;line-height:1.62;color:#c2d3cc;margin:0 auto 28px;max-width:46ch;"></p>
+
+    <div style="display:inline-flex;flex-direction:column;gap:14px;text-align:left;padding:24px 26px;border-radius:16px;border:1px solid rgba(123,247,207,.14);background:rgba(255,255,255,.022);margin-bottom:30px;">
+      <div style="display:flex;align-items:flex-start;gap:12px;">
+        <span style="flex:none;margin-top:1px;width:22px;height:22px;border-radius:6px;border:1px solid rgba(123,247,207,.25);display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#9af0cf;font-family:'Inter',monospace;">1</span>
+        <span style="font-size:14.5px;line-height:1.5;color:#d7e6e0;">We read your application and check your LinkedIn — reputation is how the bench stays trusted.</span>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:12px;">
+        <span style="flex:none;margin-top:1px;width:22px;height:22px;border-radius:6px;border:1px solid rgba(123,247,207,.25);display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#9af0cf;font-family:'Inter',monospace;">2</span>
+        <span style="font-size:14.5px;line-height:1.5;color:#d7e6e0;">If it's a fit, we'll get you board-certified and add you to the bench.</span>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:12px;">
+        <span style="flex:none;margin-top:1px;width:22px;height:22px;border-radius:6px;border:1px solid rgba(123,247,207,.25);display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#9af0cf;font-family:'Inter',monospace;">3</span>
+        <span style="font-size:14.5px;line-height:1.5;color:#d7e6e0;">We'll send you cases that match your departments — you take the ones you want, on your own time.</span>
+      </div>
+    </div>
+
+    <a href="index.html" style="display:inline-flex;align-items:center;padding:13px 22px;border-radius:10px;background:#37e6ab;color:#042018;font-size:15px;font-weight:600;text-decoration:none;box-shadow:0 0 22px rgba(55,230,171,.35);">Back to the practice</a>
+  </main>
+
+</div>
+
+<script>
+(function(){
+
+/* ── Multi-select chip factory ──────────────────────── */
+function makeMultiChips(containerId, labels, hiddenId){
+  var container = document.getElementById(containerId);
+  var hidden = document.getElementById(hiddenId);
+  var selected = [];
+  labels.forEach(function(label){
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = label;
+    btn.className = 'chip-btn';
+    btn.setAttribute('aria-pressed','false');
+    btn.addEventListener('click', function(){
+      var idx = selected.indexOf(label);
+      if(idx > -1){ selected.splice(idx, 1); } else { selected.push(label); }
+      btn.classList.toggle('active', selected.indexOf(label) > -1);
+      btn.setAttribute('aria-pressed', selected.indexOf(label) > -1 ? 'true' : 'false');
+      hidden.value = selected.join(', ');
+    });
+    container.appendChild(btn);
+  });
+  return function(){ return selected; };
+}
+
+/* ── Single-select chip factory ─────────────────────── */
+function makeSingleChips(containerId, labels, hiddenId){
+  var container = document.getElementById(containerId);
+  var hidden = document.getElementById(hiddenId);
+  var active = null;
+  labels.forEach(function(label){
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = label;
+    btn.className = 'chip-btn';
+    btn.setAttribute('aria-pressed','false');
+    btn.addEventListener('click', function(){
+      active = (active === label) ? null : label;
+      container.querySelectorAll('.chip-btn').forEach(function(b){
+        var on = b.textContent === active;
+        b.classList.toggle('active', on);
+        b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+      hidden.value = active || '';
+    });
+    container.appendChild(btn);
+  });
+  return function(){ return active; };
+}
+
+/* ── Init chips ──────────────────────────────────────── */
+makeMultiChips('dept-chips', ['Engineering','AI / Data','Security','Design / UX','DevOps'], 'f-depts');
+makeSingleChips('exp-chips', ['5–10 yrs','10–15 yrs','15–20 yrs','20+ yrs'], 'f-experience');
+makeSingleChips('cadence-chips', ['1–2 hrs / week','3–5 hrs / week','5–10 hrs / week','10+ hrs / week'], 'f-cadence');
+
+/* ── Validation helpers ──────────────────────────────── */
+var emailInput = document.getElementById('f-email');
+var emailHint  = document.getElementById('email-hint');
+var liInput    = document.getElementById('f-linkedin');
+var liHint     = document.getElementById('li-hint');
+var triedSubmit = false;
+
+function validEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((v||'').trim()); }
+
+emailInput.addEventListener('input', function(){
+  if(!triedSubmit) return;
+  var ok = validEmail(emailInput.value);
+  emailInput.classList.toggle('error', !ok);
+  emailHint.style.color = ok ? '#7e928b' : '#ff9a9a';
+  emailHint.textContent = ok ? '· how we reach you' : '· enter a valid email';
+});
+
+liInput.addEventListener('input', function(){
+  if(!triedSubmit) return;
+  var ok = !!liInput.value.trim();
+  liInput.classList.toggle('error', !ok);
+  liHint.style.color = ok ? '#7e928b' : '#ff9a9a';
+  liHint.textContent = ok ? '· required' : '· we need this to verify you';
+});
+
+/* ── Form submit ─────────────────────────────────────── */
+var form = document.getElementById('jn-form');
+var formScreen = document.getElementById('form-screen');
+var confirmScreen = document.getElementById('confirm-screen');
+var confirmLine = document.getElementById('confirm-line');
+
+form.addEventListener('submit', function(e){
+  e.preventDefault();
+  triedSubmit = true;
+
+  var emailOk = validEmail(emailInput.value);
+  var liOk = !!liInput.value.trim();
+
+  if(!emailOk){
+    emailInput.classList.add('error');
+    emailHint.style.color = '#ff9a9a';
+    emailHint.textContent = '· enter a valid email';
+  }
+  if(!liOk){
+    liInput.classList.add('error');
+    liHint.style.color = '#ff9a9a';
+    liHint.textContent = '· we need this to verify you';
+  }
+  if(!emailOk || !liOk){
+    (emailOk ? liInput : emailInput).focus();
+    return;
+  }
+
+  var submitBtn = form.querySelector('.submit-btn');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Sending…';
+
+  var name   = (document.getElementById('f-name').value||'').trim();
+  var email  = emailInput.value.trim();
+  var depts  = document.getElementById('f-depts').value;
+  var deptPhrase = depts
+    ? depts + ' cases'
+    : 'the right cases';
+
+  fetch('https://formspree.io/f/mvznlnjl', {
+    method: 'POST',
+    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      type:        'specialist-application',
+      name:        name,
+      email:       email,
+      linkedin:    liInput.value.trim(),
+      departments: depts,
+      experience:  document.getElementById('f-experience').value,
+      skills:      document.getElementById('f-skills').value,
+      proof:       document.getElementById('f-proof').value,
+      cadence:     document.getElementById('f-cadence').value,
+      why:         document.getElementById('f-why').value,
+      _subject:    'CodeSage — specialist application'
+    })
+  })
+  .then(function(r){ if(!r.ok) throw new Error(); })
+  .catch(function(){})
+  .finally(function(){
+    var firstName = name.split(/\s+/)[0];
+    confirmLine.textContent = firstName
+      ? firstName + ', welcome aboard. We\'ll review your background and reach out about ' + deptPhrase + ' at ' + email + '.'
+      : 'Welcome aboard. We\'ll review your background and reach out about ' + deptPhrase + ' at ' + email + '.';
+    formScreen.classList.add('hidden');
+    confirmScreen.classList.add('visible');
+    window.scrollTo(0, 0);
+  });
+});
+
+})();
+</script>
+</body>
+</html>

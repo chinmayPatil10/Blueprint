@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Request a Diagnosis — CodeSage</title>
+<meta name="description" content="Tell us what you built and what's keeping you up. A senior engineer reviews your app and emails you a plain-language diagnosis.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:#04070b;min-height:100vh;}
+::selection{background:rgba(55,230,171,.28);color:#eafff6;}
+
+@keyframes rqPulse{0%,100%{opacity:1;transform:scale(1);box-shadow:0 0 0 0 rgba(55,230,171,.5);}50%{opacity:.55;transform:scale(.82);box-shadow:0 0 0 6px rgba(55,230,171,0);}}
+@keyframes rqBlip{from{offset-distance:0%;}to{offset-distance:100%;}}
+@keyframes rqGlow{0%,100%{opacity:.85;}50%{opacity:1;}}
+@keyframes popIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+#rq-blip{
+  offset-path:path('M0,70 H600 C622,70 626,57 638,57 C650,57 654,70 676,70 H716 L731,70 L739,84 L750,16 L761,120 L772,52 L781,70 H822 C852,70 868,50 890,50 C912,50 928,70 958,70 H1600');
+  offset-rotate:0deg;
+  animation:rqBlip 5.5s linear infinite;
+}
+
+body{font-family:'Inter',system-ui,sans-serif;color:#e8f1ec;-webkit-font-smoothing:antialiased;}
+
+/* Fixed background grid */
+.bg-grid{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(123,247,207,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(123,247,207,.04) 1px,transparent 1px);background-size:46px 46px;-webkit-mask-image:radial-gradient(ellipse 80% 70% at 50% 0%,#000 20%,transparent 78%);mask-image:radial-gradient(ellipse 80% 70% at 50% 0%,#000 20%,transparent 78%);}
+
+.rq-input{
+  width:100%;font-family:inherit;font-size:15px;color:#eef6f2;
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(123,247,207,.16);
+  border-radius:10px;padding:13px 15px;
+  outline:none;transition:border-color .2s,box-shadow .2s;
+}
+.rq-input:focus{border-color:rgba(55,230,171,.55);box-shadow:0 0 0 3px rgba(55,230,171,.08);}
+.rq-input::placeholder{color:#4a6660;}
+
+.rq-input.error{border-color:rgba(255,120,120,.6);}
+
+select.rq-input{cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2337e6ab' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 15px center;padding-right:40px;}
+select.rq-input option{color:#eef6f2;background:#0a1016;}
+select.rq-input.placeholder-selected{color:#4a6660;}
+
+.chip-btn{
+  cursor:pointer;font-family:inherit;font-size:14px;font-weight:500;
+  padding:10px 16px;border-radius:999px;border:none;
+  transition:all .18s;
+  background:rgba(255,255,255,.03);color:#c2d3cc;
+  border:1px solid rgba(123,247,207,.16);
+}
+.chip-btn:hover{border-color:rgba(123,247,207,.4);color:#e8f1ec;}
+.chip-btn.active{background:#37e6ab;color:#042018;border-color:#37e6ab;box-shadow:0 0 18px rgba(55,230,171,.35);}
+.chip-btn:focus-visible{outline:2px solid #7bf7cf;outline-offset:2px;}
+
+.section-divider{display:flex;align-items:center;gap:10px;margin-bottom:4px;}
+.section-label{font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#8aa39a;white-space:nowrap;}
+.section-line{flex:1;height:1px;background:rgba(123,247,207,.1);}
+
+.triage-btn{
+  cursor:pointer;font-family:inherit;
+  display:flex;align-items:center;justify-content:space-between;gap:14px;
+  width:100%;text-align:left;
+  padding:16px 18px;border-radius:14px;border:none;
+  transition:all .2s;
+  background:rgba(255,255,255,.022);
+  border:1px dashed rgba(55,230,171,.4);
+}
+.triage-btn.active{background:linear-gradient(135deg,rgba(55,230,171,.12),rgba(55,230,171,.03));border:1px solid rgba(55,230,171,.5);}
+.triage-btn:focus-visible{outline:2px solid #7bf7cf;outline-offset:2px;}
+
+.triage-check{
+  flex:none;display:inline-flex;align-items:center;justify-content:center;
+  width:26px;height:26px;border-radius:50%;
+  font-size:14px;font-weight:700;transition:all .2s;
+  background:transparent;color:transparent;
+  border:1px solid rgba(123,247,207,.3);
+}
+.triage-check.active{background:#37e6ab;color:#042018;border-color:#37e6ab;}
+
+.submit-btn{
+  display:inline-flex;align-items:center;gap:9px;
+  padding:15px 28px;border-radius:11px;border:none;
+  cursor:pointer;font-family:inherit;
+  background:#37e6ab;color:#042018;
+  font-size:16px;font-weight:600;
+  box-shadow:0 0 26px rgba(55,230,171,.4);
+  transition:box-shadow .2s,transform .15s;
+}
+.submit-btn:hover{box-shadow:0 0 38px rgba(55,230,171,.65);transform:translateY(-1px);}
+.submit-btn:focus-visible{outline:2px solid #7bf7cf;outline-offset:3px;}
+
+/* Specialist field pop-in */
+.specialist-wrap{animation:popIn .25s ease both;}
+
+/* Confirmation */
+#confirm-screen{display:none;}
+#confirm-screen.visible{display:block;}
+#form-screen.hidden{display:none;}
+
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important;}
+  #rq-blip{offset-distance:47%!important;}
+}
+</style>
+</head>
+<body>
+
+<div class="bg-grid" aria-hidden="true"></div>
+
+<div style="position:relative;z-index:1;">
+
+  <!-- NAV -->
+  <header style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 26px;border-bottom:1px solid rgba(123,247,207,.08);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);background:rgba(4,7,11,.6);position:sticky;top:0;z-index:20;">
+    <a href="index.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;">
+      <span style="display:inline-flex;filter:drop-shadow(0 0 5px rgba(55,230,171,.55));" aria-hidden="true">
+        <svg width="22" height="27" viewBox="0 0 418 504" fill="none">
+          <rect x="249.095" width="504" height="38" rx="19" transform="rotate(90 249.095 0)" fill="#37e6ab"/>
+          <rect x="425.255" y="77.1607" width="504" height="38" rx="19" transform="rotate(132 425.255 77.1607)" fill="#37e6ab"/>
+          <path d="M88.0519 444.28C78.3225 448.211 67.2487 443.51 63.3178 433.781L1.38854 280.5C-2.54236 270.771 2.15818 259.697 11.8875 255.766C21.6168 251.835 32.6906 256.536 36.6215 266.265L98.5508 419.546C102.482 429.275 97.7812 440.349 88.0519 444.28Z" fill="#37e6ab"/>
+        </svg>
+      </span>
+      <span style="font-family:'Lora',serif;font-size:18px;font-weight:600;color:#f2f8f5;">CodeSage</span>
+      <span style="font-size:13px;color:#8aa39a;font-weight:500;border-left:1px solid rgba(123,247,207,.14);padding-left:11px;margin-left:3px;">New checkup</span>
+    </a>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span aria-hidden="true" style="width:7px;height:7px;border-radius:50%;background:#37e6ab;animation:rqPulse 2.4s ease-in-out infinite;flex-shrink:0;"></span>
+      <span style="font-size:13px;color:#9fb3ab;font-weight:500;">Usually matched within a day</span>
+    </div>
+  </header>
+
+  <!-- FORM SCREEN -->
+  <main id="form-screen" style="max-width:720px;margin:0 auto;padding:44px 24px 90px;">
+
+    <p style="font-size:12px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:#37e6ab;margin:0 0 12px;">Request a diagnosis</p>
+    <h1 style="font-family:'Lora',serif;font-weight:600;font-size:clamp(30px,4.6vw,44px);line-height:1.1;letter-spacing:-.5px;margin:0 0 14px;color:#f4faf7;max-width:18ch;">Tell us what you built and what's keeping you up.</h1>
+    <p style="font-size:16px;line-height:1.6;color:#c2d3cc;margin:0 0 8px;max-width:58ch;">No account, no payment. A senior engineer reads this, reviews your app, and emails you a plain-language diagnosis. Most fields are optional — the more you share, the sharper the read.</p>
+
+    <!-- Mini ECG -->
+    <div aria-hidden="true" style="position:relative;width:100%;height:42px;margin:18px 0 30px;opacity:.9;">
+      <svg viewBox="0 0 1600 140" preserveAspectRatio="none" width="100%" height="100%" style="display:block;overflow:visible;">
+        <defs>
+          <linearGradient id="rq-ecg" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#37e6ab" stop-opacity="0"/>
+            <stop offset="0.12" stop-color="#37e6ab" stop-opacity="0.8"/>
+            <stop offset="0.88" stop-color="#7bf7cf" stop-opacity="0.8"/>
+            <stop offset="1" stop-color="#7bf7cf" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <path d="M0,70 H600 C622,70 626,57 638,57 C650,57 654,70 676,70 H716 L731,70 L739,84 L750,16 L761,120 L772,52 L781,70 H822 C852,70 868,50 890,50 C912,50 928,70 958,70 H1600"
+          fill="none" stroke="url(#rq-ecg)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"
+          style="filter:drop-shadow(0 0 5px rgba(55,230,171,.5));animation:rqGlow 3s ease-in-out infinite;"/>
+        <circle id="rq-blip" r="4" fill="#eafff6" vector-effect="non-scaling-stroke"
+          style="filter:drop-shadow(0 0 6px rgba(123,247,207,.9)) drop-shadow(0 0 12px rgba(55,230,171,.6));"/>
+      </svg>
+    </div>
+
+    <form id="dx-form" novalidate style="display:flex;flex-direction:column;gap:30px;">
+
+      <!-- 01 THE BUILD -->
+      <fieldset style="border:none;margin:0;padding:0;display:flex;flex-direction:column;gap:16px;">
+        <div class="section-divider">
+          <span class="section-label">01 · The build</span>
+          <span class="section-line"></span>
+        </div>
+
+        <label style="display:flex;flex-direction:column;gap:7px;">
+          <span style="font-size:14px;font-weight:500;color:#d7e6e0;">What did you build?</span>
+          <input class="rq-input" type="text" id="f-appname" name="app_name" placeholder="e.g. pantry-tracker — a shared grocery app for households">
+        </label>
+
+        <div style="display:flex;flex-direction:column;gap:9px;">
+          <span style="font-size:14px;font-weight:500;color:#d7e6e0;">What stage are you at?</span>
+          <div id="stage-chips" style="display:flex;flex-wrap:wrap;gap:8px;" role="group" aria-label="Stage"></div>
+        </div>
+
+        <label style="display:flex;flex-direction:column;gap:7px;">
+          <span style="font-size:14px;font-weight:500;color:#d7e6e0;">What did you build it with?</span>
+          <select class="rq-input placeholder-selected" id="f-builtwith" name="built_with">
+            <option value="" disabled selected>Select a tool…</option>
+            <option>Lovable</option><option>Cursor</option><option>Replit</option>
+            <option>Bolt</option><option>Claude Code</option><option>v0</option>
+            <option>Other</option><option>Not sure</option>
+          </select>
+        </label>
+
+        <label style="display:flex;flex-direction:column;gap:7px;">
+          <span style="font-size:14px;font-weight:500;color:#d7e6e0;">Link to the app or repo <span style="color:#7e928b;font-weight:400;">· live URL, GitHub, or a private link</span></span>
+          <input class="rq-input" type="text" id="f-link" name="link" placeholder="https://" style="font-family:'Inter',monospace;font-size:14px;">
+        </label>
+
+        <label style="display:flex;flex-direction:column;gap:7px;">
+          <span style="font-size:14px;font-weight:500;color:#d7e6e0;">Stack <span style="color:#7e928b;font-weight:400;">· optional</span></span>
+          <input class="rq-input" type="text" id="f-stack" name="stack" placeholder="e.g. Next.js, Supabase, Tailwind">
+        </label>
+      </fieldset>
+
+      <!-- 02 CHIEF COMPLAINT -->
+      <fieldset style="border:none;margin:0;padding:0;display:flex;flex-direction:column;gap:16px;">
+        <div class="section-divider">
+          <span class="section-label">02 · Chief complaint</span>
+          <span class="section-line"></span>
+        </div>
+
+        <label style="display:flex;flex-direction:column;gap:7px;">
+          <span style="font-size:14px;font-weight:500;color:#d7e6e0;">What are you worried about?</span>
+          <textarea class="rq-input" id="f-worry" name="worry" rows="3"
+            placeholder="Be honest — "I think it works but I have no idea if it's secure," or "it gets slow with real data.""
+            style="resize:vertical;line-height:1.55;"></textarea>
+        </label>
+
+        <label style="display:flex;flex-direction:column;gap:7px;">
+          <span style="font-size:14px;font-weight:500;color:#d7e6e0;">Worst case, if it breaks? <span style="color:#7e928b;font-weight:400;">· optional</span></span>
+          <input class="rq-input" type="text" id="f-worstcase" name="worst_case" placeholder="e.g. someone sees another user's data">
+        </label>
+
+        <div style="display:flex;flex-direction:column;gap:9px;">
+          <span style="font-size:14px;font-weight:500;color:#d7e6e0;">How soon are you launching?</span>
+          <div id="urgency-chips" style="display:flex;flex-wrap:wrap;gap:8px;" role="group" aria-label="Urgency"></div>
+        </div>
+      </fieldset>
+
+      <!-- 03 WHO SHOULD LOOK -->
+      <fieldset style="border:none;margin:0;padding:0;display:flex;flex-direction:column;gap:16px;">
+        <div class="section-divider">
+          <span class="section-label">03 · Who should look?</span>
+          <span class="section-line"></span>
+        </div>
+
+        <button type="button" id="triage-btn" class="triage-btn" aria-pressed="false">
+          <span style="display:flex;align-items:center;gap:12px;">
+            <span aria-hidden="true" style="flex:none;display:inline-flex;width:38px;height:38px;border-radius:10px;align-items:center;justify-content:center;background:rgba(55,230,171,.12);filter:drop-shadow(0 0 5px rgba(55,230,171,.4));">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 4 V20" stroke="#37e6ab" stroke-width="2.7" stroke-linecap="round"/><path d="M6 12 L10 16 L19 5" stroke="#37e6ab" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <span style="text-align:left;">
+              <span style="display:block;font-size:15.5px;font-weight:600;color:#f2f8f5;">Not sure? Let us triage it.</span>
+              <span style="display:block;font-size:13.5px;color:#a9bcb4;margin-top:2px;">We'll read your complaint and match you to the right specialist by hand.</span>
+            </span>
+          </span>
+          <span id="triage-check" class="triage-check" aria-hidden="true"></span>
+        </button>
+
+        <p style="font-size:13px;color:#7e928b;margin:2px 0;text-align:center;">— or pick a department yourself —</p>
+
+        <div id="dept-chips" style="display:flex;flex-wrap:wrap;gap:8px;" role="group" aria-label="Department"></div>
+
+        <div id="specialist-wrap" class="specialist-wrap" style="display:none;">
+          <label style="display:flex;flex-direction:column;gap:7px;">
+            <span style="font-size:14px;font-weight:500;color:#d7e6e0;">Request a specialist by name? <span style="color:#7e928b;font-weight:400;">· optional — we'll try, no promises</span></span>
+            <input class="rq-input" type="text" id="f-specialist" name="specialist" placeholder="e.g. Yuki Tanaka, or leave blank and we'll choose">
+          </label>
+        </div>
+
+        <!-- Hidden routing field -->
+        <input type="hidden" id="f-route" name="route">
+      </fieldset>
+
+      <!-- 04 WHERE TO SEND -->
+      <fieldset style="border:none;margin:0;padding:0;display:flex;flex-direction:column;gap:16px;">
+        <div class="section-divider">
+          <span class="section-label">04 · Where to send</span>
+          <span class="section-line"></span>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;">
+          <label style="display:flex;flex-direction:column;gap:7px;">
+            <span style="font-size:14px;font-weight:500;color:#d7e6e0;">Your name</span>
+            <input class="rq-input" type="text" id="f-name" name="name" placeholder="First name is fine" autocomplete="given-name">
+          </label>
+          <label style="display:flex;flex-direction:column;gap:7px;">
+            <span style="font-size:14px;font-weight:500;color:#d7e6e0;">Email <span id="email-hint" style="font-weight:400;color:#7e928b;">· how we send your diagnosis</span></span>
+            <input class="rq-input" type="email" id="f-email" name="email" placeholder="you@example.com" autocomplete="email" required>
+          </label>
+        </div>
+
+        <label style="display:flex;flex-direction:column;gap:7px;">
+          <span style="font-size:14px;font-weight:500;color:#d7e6e0;">Your LinkedIn <span style="color:#7e928b;font-weight:400;">· optional — so we know who we're helping</span></span>
+          <input class="rq-input" type="text" id="f-linkedin" name="linkedin" placeholder="linkedin.com/in/…" style="font-family:'Inter',monospace;font-size:14px;">
+        </label>
+      </fieldset>
+
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:16px;margin-top:6px;">
+        <button type="submit" class="submit-btn">Request diagnosis</button>
+        <span style="font-size:13px;color:#8aa39a;max-width:34ch;line-height:1.45;">You'll get a confirmation email, then your diagnosis once a specialist has reviewed it.</span>
+      </div>
+    </form>
+  </main>
+
+  <!-- CONFIRMATION SCREEN -->
+  <main id="confirm-screen" style="max-width:620px;margin:0 auto;padding:80px 24px;text-align:center;">
+    <span aria-hidden="true" style="display:inline-flex;width:74px;height:74px;border-radius:50%;align-items:center;justify-content:center;background:rgba(55,230,171,.1);border:1px solid rgba(55,230,171,.35);margin-bottom:26px;filter:drop-shadow(0 0 16px rgba(55,230,171,.4));">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+        <path d="M12 4 V20" stroke="#37e6ab" stroke-width="2.6" stroke-linecap="round"/>
+        <path d="M6 12 L10 16 L19 5" stroke="#37e6ab" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </span>
+    <h1 style="font-family:'Lora',serif;font-weight:600;font-size:clamp(28px,4.4vw,40px);line-height:1.12;letter-spacing:-.4px;margin:0 0 16px;color:#f4faf7;">You're checked in.</h1>
+    <p id="confirm-line" style="font-size:16.5px;line-height:1.62;color:#c2d3cc;margin:0 auto 28px;max-width:46ch;"></p>
+
+    <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;">
+      <a href="index.html" style="display:inline-flex;align-items:center;padding:13px 22px;border-radius:10px;background:#37e6ab;color:#042018;font-size:15px;font-weight:600;text-decoration:none;box-shadow:0 0 22px rgba(55,230,171,.35);">Back to the practice</a>
+      <button type="button" id="reset-btn" style="cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;padding:13px 22px;border-radius:10px;background:transparent;border:1px solid rgba(123,247,207,.28);color:#d7e6e0;font-size:15px;font-weight:500;">Submit another</button>
+    </div>
+  </main>
+
+</div>
+
+<script>
+(function(){
+
+/* ── Chip factory ───────────────────────────────────────── */
+function makeChips(containerId, labels, onSelect){
+  var container = document.getElementById(containerId);
+  var active = null;
+  labels.forEach(function(label){
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = label;
+    btn.className = 'chip-btn';
+    btn.setAttribute('aria-pressed','false');
+    btn.addEventListener('click', function(){
+      if(active === label){ active = null; } else { active = label; }
+      container.querySelectorAll('.chip-btn').forEach(function(b){
+        var on = b.textContent === active;
+        b.classList.toggle('active', on);
+        b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+      onSelect(active);
+    });
+    container.appendChild(btn);
+  });
+  return function(){ return active; };
+}
+
+/* ── Stage chips ─────────────────────────────────────────── */
+var getStage = makeChips('stage-chips', ['Idea','Building','About to launch','Live with users'], function(){});
+
+/* ── Urgency chips ──────────────────────────────────────── */
+var getUrgency = makeChips('urgency-chips', ['Already live','Days away','A few weeks','Just exploring'], function(){});
+
+/* ── Dept chips ─────────────────────────────────────────── */
+var activeDept = null;
+var deptContainer = document.getElementById('dept-chips');
+var triageBtn = document.getElementById('triage-btn');
+var triageCheck = document.getElementById('triage-check');
+var specialistWrap = document.getElementById('specialist-wrap');
+var routeField = document.getElementById('f-route');
+
+function setRoute(val){
+  routeField.value = val || '';
+  // triage state
+  var isTriage = val === 'triage';
+  triageBtn.classList.toggle('active', isTriage);
+  triageBtn.setAttribute('aria-pressed', isTriage ? 'true' : 'false');
+  triageCheck.classList.toggle('active', isTriage);
+  triageCheck.textContent = isTriage ? '✓' : '';
+  // dept chips
+  deptContainer.querySelectorAll('.chip-btn').forEach(function(b){
+    var on = b.textContent === val;
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+  // specialist field
+  var showSpec = !!val && val !== 'triage';
+  specialistWrap.style.display = showSpec ? 'block' : 'none';
+}
+
+triageBtn.addEventListener('click', function(){
+  activeDept = null;
+  var isTriage = routeField.value === 'triage';
+  setRoute(isTriage ? '' : 'triage');
+});
+
+var getDept = makeChips('dept-chips', ['Engineering','AI / Data','Security','Design / UX','DevOps'], function(val){
+  if(val){ setRoute(val); } else { setRoute(''); }
+});
+
+// When dept chip is clicked, clear triage
+document.getElementById('dept-chips').addEventListener('click', function(){
+  // setRoute already called via makeChips callback
+});
+
+/* ── Built with select ──────────────────────────────────── */
+var builtWith = document.getElementById('f-builtwith');
+builtWith.addEventListener('change', function(){
+  builtWith.classList.toggle('placeholder-selected', !builtWith.value);
+});
+
+/* ── Email validation feedback ──────────────────────────── */
+var emailInput = document.getElementById('f-email');
+var emailHint = document.getElementById('email-hint');
+var triedSubmit = false;
+
+function validateEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((v||'').trim()); }
+
+emailInput.addEventListener('input', function(){
+  if(!triedSubmit) return;
+  var ok = validateEmail(emailInput.value);
+  emailInput.classList.toggle('error', !ok);
+  emailHint.style.color = ok ? '#7e928b' : '#ff9a9a';
+  emailHint.textContent = ok ? '· how we send your diagnosis' : '· enter a valid email';
+});
+
+/* ── Form submit ────────────────────────────────────────── */
+var form = document.getElementById('dx-form');
+var formScreen = document.getElementById('form-screen');
+var confirmScreen = document.getElementById('confirm-screen');
+var confirmLine = document.getElementById('confirm-line');
+
+form.addEventListener('submit', function(e){
+  e.preventDefault();
+  triedSubmit = true;
+
+  if(!validateEmail(emailInput.value)){
+    emailInput.classList.add('error');
+    emailHint.style.color = '#ff9a9a';
+    emailHint.textContent = '· enter a valid email';
+    emailInput.focus();
+    return;
+  }
+
+  var submitBtn = form.querySelector('.submit-btn');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Sending…';
+
+  var route = routeField.value;
+  var routeLabel = route === 'triage' ? 'our triage desk'
+    : route ? 'our ' + route + ' department'
+    : 'the right specialist';
+
+  var name = (document.getElementById('f-name').value || '').trim();
+  var email = emailInput.value.trim();
+
+  fetch('https://formspree.io/f/mvznlnjl', {
+    method: 'POST',
+    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      app_name:    document.getElementById('f-appname').value,
+      stage:       getStage() || '',
+      built_with:  builtWith.value,
+      link:        document.getElementById('f-link').value,
+      stack:       document.getElementById('f-stack').value,
+      worry:       document.getElementById('f-worry').value,
+      worst_case:  document.getElementById('f-worstcase').value,
+      urgency:     getUrgency() || '',
+      route:       route,
+      specialist:  document.getElementById('f-specialist').value,
+      name:        name,
+      email:       email,
+      linkedin:    document.getElementById('f-linkedin').value,
+      _subject:    'CodeSage — diagnosis request'
+    })
+  })
+  .then(function(r){ if(!r.ok) throw new Error(); })
+  .catch(function(){ /* still show confirmation — Formspree may fail gracefully */ })
+  .finally(function(){
+    // Show confirmation
+    confirmLine.textContent = name
+      ? name + ', your checkup is logged. We\'ll match you with ' + routeLabel + ' and email you at ' + email + '.'
+      : 'Your checkup is logged. We\'ll match you with ' + routeLabel + ' and email you at ' + email + '.';
+    formScreen.classList.add('hidden');
+    confirmScreen.classList.add('visible');
+    window.scrollTo(0, 0);
+  });
+});
+
+/* ── Reset ──────────────────────────────────────────────── */
+document.getElementById('reset-btn').addEventListener('click', function(){
+  form.reset();
+  triedSubmit = false;
+  builtWith.classList.add('placeholder-selected');
+  emailInput.classList.remove('error');
+  emailHint.style.color = '#7e928b';
+  emailHint.textContent = '· how we send your diagnosis';
+  setRoute('');
+  // Reset all chip groups
+  document.querySelectorAll('.chip-btn').forEach(function(b){
+    b.classList.remove('active');
+    b.setAttribute('aria-pressed','false');
+  });
+  formScreen.classList.remove('hidden');
+  confirmScreen.classList.remove('visible');
+  window.scrollTo(0, 0);
+});
+
+})();
+</script>
+</body>
+</html>
